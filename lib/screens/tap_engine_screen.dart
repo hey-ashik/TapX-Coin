@@ -346,7 +346,7 @@ class _TapEngineScreenState extends State<TapEngineScreen> with SingleTickerProv
                               ),
                             ),
                             Text(
-                              '+${numberFormatter.format(tapEngine.todayTaps)} Taps',
+                              '+${numberFormatter.format(tapEngine.todayTaps)} Coins',
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,

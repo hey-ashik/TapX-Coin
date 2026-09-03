@@ -372,8 +372,8 @@ class _DailyBonusModalState extends State<DailyBonusModal> with SingleTickerProv
                         children: [
                           Text(
                             isClaimed
-                                ? 'Day $currentDay Claimed (+${tapEngine.currentDayBonusAmount} Taps)'
-                                : 'Today\'s Reward: +${tapEngine.currentDayBonusAmount} Taps',
+                                ? 'Day $currentDay Claimed (+${tapEngine.currentDayBonusAmount} Coins)'
+                                : 'Today\'s Reward: +${tapEngine.currentDayBonusAmount} Coins',
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w800,
@@ -383,7 +383,7 @@ class _DailyBonusModalState extends State<DailyBonusModal> with SingleTickerProv
                           const SizedBox(height: 2),
                           Text(
                             isClaimed
-                                ? 'Next: +${tapEngine.nextDayBonusAmount} Taps • Unlocks in ${tapEngine.timeUntilReset}'
+                                ? 'Next: +${tapEngine.nextDayBonusAmount} Coins • Unlocks in ${tapEngine.timeUntilReset}'
                                 : 'Day $currentDay of 7 Streak • Redeem before midnight',
                             style: const TextStyle(
                               fontSize: 12,
@@ -412,7 +412,7 @@ class _DailyBonusModalState extends State<DailyBonusModal> with SingleTickerProv
                           Navigator.pop(context);
                           AppToast.show(
                             context,
-                            message: 'Claimed +$claimedAmount Taps! Streak active for today.',
+                            message: 'Claimed +$claimedAmount Coins! Streak active for today.',
                           );
                         },
                   style: ElevatedButton.styleFrom(
@@ -428,7 +428,7 @@ class _DailyBonusModalState extends State<DailyBonusModal> with SingleTickerProv
                   child: Text(
                     isClaimed
                         ? 'Claimed for Today (${tapEngine.timeUntilReset} left)'
-                        : 'Claim +${tapEngine.currentDayBonusAmount} Taps',
+                        : 'Claim +${tapEngine.currentDayBonusAmount} Coins',
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
