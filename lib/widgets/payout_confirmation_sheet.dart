@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/transaction_model.dart';
 import '../providers/wallet_provider.dart';
+import '../services/haptic_service.dart';
 import '../theme/app_colors.dart';
 import 'app_toast.dart';
 
@@ -224,8 +225,10 @@ class _PayoutConfirmationSheetState extends State<PayoutConfirmationSheet> {
                       ? null
                       : () {
                           if (_isSubmitted) {
+                            HapticService.lightImpact();
                             Navigator.pop(context);
                           } else {
+                            HapticService.mediumImpact();
                             _onConfirm();
                           }
                         },

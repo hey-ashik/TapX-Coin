@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/tap_engine_provider.dart';
+import '../services/haptic_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_avatar.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
@@ -50,13 +50,13 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
   }
 
   void _showNotificationsSheet() {
-    HapticFeedback.lightImpact();
+    HapticService.lightImpact();
     NotificationModal.show(context);
   }
 
   void _onTabTapped(int index) {
     if (index == _currentIndex) return;
-    HapticFeedback.lightImpact();
+    HapticService.lightImpact();
     context.read<AuthProvider>().setActiveTab(index);
     setState(() => _currentIndex = index);
     _pageController.animateToPage(
@@ -89,7 +89,7 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
             size: 32,
           ),
           onPressed: () {
-            HapticFeedback.lightImpact();
+            HapticService.lightImpact();
             UserProfileModal.show(context, user: auth.currentUser);
           },
         ),

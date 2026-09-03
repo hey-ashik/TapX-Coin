@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/notification_model.dart';
 import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
+import '../services/haptic_service.dart';
 import '../theme/app_colors.dart';
 import 'app_skeleton.dart';
 import 'app_toast.dart';
@@ -53,6 +54,7 @@ class _NotificationModalState extends State<NotificationModal> {
   }
 
   Future<void> _markAllRead() async {
+    HapticService.lightImpact();
     await ApiService.markNotificationRead();
     setState(() {
       _notifications = _notifications.map((n) => n.copyWith(isRead: true)).toList();
@@ -63,6 +65,7 @@ class _NotificationModalState extends State<NotificationModal> {
   }
 
   void _deleteNotification(AppNotification notif) {
+    HapticService.lightImpact();
     final auth = context.read<AuthProvider>();
     auth.dismissNotification(notif.id);
     setState(() {
@@ -73,6 +76,7 @@ class _NotificationModalState extends State<NotificationModal> {
   }
 
   void _openNotificationDetail(AppNotification notif) {
+    HapticService.lightImpact();
     if (!notif.isRead) {
       ApiService.markNotificationRead(notif.id);
       setState(() {

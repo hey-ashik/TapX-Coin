@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/haptic_service.dart';
 import '../theme/app_colors.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
@@ -85,7 +86,10 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        HapticService.lightImpact();
+        onTap();
+      },
       borderRadius: BorderRadius.circular(24),
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,

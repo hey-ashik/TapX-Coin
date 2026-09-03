@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/haptic_service.dart';
 
 class SettingsProvider extends ChangeNotifier {
   static const String _keyHaptics = 'tapx_setting_haptics';
@@ -26,13 +27,18 @@ class SettingsProvider extends ChangeNotifier {
       _hapticsEnabled = prefs.getBool(_keyHaptics) ?? true;
       _soundEnabled = prefs.getBool(_keySound) ?? true;
       _lowPowerMode = prefs.getBool(_keyLowPower) ?? false;
+      HapticService.setEnabled(_hapticsEnabled);
       notifyListeners();
     } catch (_) {}
   }
 
   void toggleHaptics(bool value) async {
     _hapticsEnabled = value;
+    HapticService.setEnabled(value);
     notifyListeners();
+    if (value) {
+      HapticService.selectionClick();
+    }
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_keyHaptics, value);

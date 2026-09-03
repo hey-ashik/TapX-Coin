@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../services/haptic_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/guest_confirm_modal.dart';
@@ -139,6 +140,7 @@ class _AuthScreenState extends State<AuthScreen>
   }
 
   void _handleSubmit() async {
+    HapticService.lightImpact();
     final auth = context.read<AuthProvider>();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
@@ -227,6 +229,7 @@ class _AuthScreenState extends State<AuthScreen>
   }
 
   void _handleVerifyOtp() async {
+    HapticService.mediumImpact();
     final auth = context.read<AuthProvider>();
     final code = _otpController.text.trim();
 
@@ -258,6 +261,7 @@ class _AuthScreenState extends State<AuthScreen>
   }
 
   void _handleGuestClick() {
+    HapticService.lightImpact();
     GuestConfirmModal.show(
       context,
       onConfirmGuest: () {
@@ -488,7 +492,10 @@ class _AuthScreenState extends State<AuthScreen>
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: () => setState(() => _selectedSegment = 0),
+                  onTap: () {
+                    HapticService.lightImpact();
+                    setState(() => _selectedSegment = 0);
+                  },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 250),
                     curve: Curves.easeInOut,
@@ -520,7 +527,10 @@ class _AuthScreenState extends State<AuthScreen>
               ),
               Expanded(
                 child: GestureDetector(
-                  onTap: () => setState(() => _selectedSegment = 1),
+                  onTap: () {
+                    HapticService.lightImpact();
+                    setState(() => _selectedSegment = 1);
+                  },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 250),
                     curve: Curves.easeInOut,
@@ -599,8 +609,10 @@ class _AuthScreenState extends State<AuthScreen>
                 color: AppColors.textMuted,
                 size: 20,
               ),
-              onPressed: () =>
-                  setState(() => _obscurePassword = !_obscurePassword),
+              onPressed: () {
+                HapticService.selectionClick();
+                setState(() => _obscurePassword = !_obscurePassword);
+              },
             ),
           ),
         ),
@@ -685,6 +697,7 @@ class _AuthScreenState extends State<AuthScreen>
           children: [
             IconButton(
               onPressed: () {
+                HapticService.lightImpact();
                 _otpFocusNode.unfocus();
                 setState(() => _isVerifyingOtp = false);
               },
@@ -775,6 +788,7 @@ class _AuthScreenState extends State<AuthScreen>
             if (_resendTimerSeconds == 0)
               InkWell(
                 onTap: () {
+                  HapticService.lightImpact();
                   auth.resendOtp();
                   _startResendCountdown();
                   AppToast.show(context, message: 'New code sent to your email!');

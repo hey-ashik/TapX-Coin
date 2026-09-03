@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/leaderboard_provider.dart';
+import '../services/haptic_service.dart';
 import '../theme/app_colors.dart';
 import 'app_avatar.dart';
 import 'app_skeleton.dart';
@@ -176,7 +176,7 @@ class _LeaderboardSearchModalState extends State<LeaderboardSearchModal> {
                     ),
                     IconButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticService.lightImpact();
                         Navigator.pop(context);
                       },
                       icon: Container(
@@ -251,6 +251,7 @@ class _LeaderboardSearchModalState extends State<LeaderboardSearchModal> {
                       if (_searchController.text.isNotEmpty)
                         GestureDetector(
                           onTap: () {
+                            HapticService.selectionClick();
                             _searchController.clear();
                             setState(() {
                               _query = '';
@@ -314,7 +315,7 @@ class _LeaderboardSearchModalState extends State<LeaderboardSearchModal> {
                               behavior: HitTestBehavior.opaque,
                               onTap: () {
                                 if (_activeTab != 0) {
-                                  HapticFeedback.lightImpact();
+                                  HapticService.lightImpact();
                                   setState(() => _activeTab = 0);
                                 }
                               },
@@ -336,7 +337,7 @@ class _LeaderboardSearchModalState extends State<LeaderboardSearchModal> {
                               behavior: HitTestBehavior.opaque,
                               onTap: () {
                                 if (_activeTab != 1) {
-                                  HapticFeedback.lightImpact();
+                                  HapticService.lightImpact();
                                   setState(() => _activeTab = 1);
                                 }
                               },
@@ -414,6 +415,7 @@ class _LeaderboardSearchModalState extends State<LeaderboardSearchModal> {
 
                               return InkWell(
                                 onTap: () {
+                                  HapticService.lightImpact();
                                   Navigator.pop(context);
                                   UserProfileModal.show(context, entry: item);
                                 },

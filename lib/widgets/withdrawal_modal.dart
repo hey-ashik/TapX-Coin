@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../models/transaction_model.dart';
 import '../providers/wallet_provider.dart';
+import '../services/haptic_service.dart';
 import '../theme/app_colors.dart';
 import 'app_toast.dart';
 import 'payout_confirmation_sheet.dart';
@@ -75,6 +76,7 @@ class _WithdrawalModalState extends State<WithdrawalModal> {
   }
 
   void _handleProcess() {
+    HapticService.mediumImpact();
     final wallet = context.read<WalletProvider>();
     final amount = double.tryParse(_amountController.text.trim()) ?? 0.0;
     final name = _nameController.text.trim();
@@ -192,7 +194,10 @@ class _WithdrawalModalState extends State<WithdrawalModal> {
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                     IconButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () {
+                        HapticService.lightImpact();
+                        Navigator.pop(context);
+                      },
                       icon: const Icon(Icons.close, color: AppColors.textMuted),
                     ),
                   ],
@@ -255,6 +260,7 @@ class _WithdrawalModalState extends State<WithdrawalModal> {
                         padding: const EdgeInsets.symmetric(horizontal: 3.0),
                         child: InkWell(
                           onTap: () {
+                            HapticService.selectionClick();
                             setState(() {
                               _amountController.text = amount.toInt().toString();
                             });
@@ -352,6 +358,7 @@ class _WithdrawalModalState extends State<WithdrawalModal> {
                       }).toList(),
                       onChanged: (val) {
                         if (val != null) {
+                          HapticService.selectionClick();
                           setState(() => _selectedMethod = val);
                         }
                       },

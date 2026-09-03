@@ -5,6 +5,7 @@ import '../providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/tap_engine_provider.dart';
 import '../services/api_service.dart';
+import '../services/haptic_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_pull_to_refresh.dart';
 import '../widgets/daily_bonus_modal.dart';
@@ -361,7 +362,10 @@ class _TapEngineScreenState extends State<TapEngineScreen> with SingleTickerProv
                 ),
                 const Divider(height: 20),
                 InkWell(
-                  onTap: () => DailyBonusModal.show(context),
+                  onTap: () {
+                    HapticService.lightImpact();
+                    DailyBonusModal.show(context);
+                  },
                   borderRadius: BorderRadius.circular(12),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6.0),

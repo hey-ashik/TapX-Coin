@@ -5,6 +5,7 @@ import '../models/app_update_info.dart';
 import '../providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/api_service.dart';
+import '../services/haptic_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_avatar.dart';
 import '../widgets/app_pull_to_refresh.dart';
@@ -60,7 +61,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _saveProfile() async {
     setState(() => _isSavingProfile = true);
-    HapticFeedback.lightImpact();
+    HapticService.lightImpact();
 
     await Future.delayed(const Duration(milliseconds: 500));
 
@@ -72,7 +73,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
 
     if (mounted) {
-      HapticFeedback.mediumImpact();
+      HapticService.mediumImpact();
       setState(() => _isSavingProfile = false);
       AppToast.show(context, message: 'Profile updated successfully!');
     }
@@ -80,7 +81,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _saveConnections() async {
     setState(() => _isSavingConnections = true);
-    HapticFeedback.lightImpact();
+    HapticService.lightImpact();
 
     await Future.delayed(const Duration(milliseconds: 500));
 
@@ -93,7 +94,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
 
     if (mounted) {
-      HapticFeedback.mediumImpact();
+      HapticService.mediumImpact();
       setState(() => _isSavingConnections = false);
       AppToast.show(context, message: 'Social connections updated!');
     }
@@ -143,6 +144,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   // Avatar Row (Clickable)
                   InkWell(
                     onTap: () {
+                      HapticService.lightImpact();
                       AvatarPickerModal.show(
                         context,
                         onAvatarSelected: (url) {
@@ -467,7 +469,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
                       title: const Text('Haptic Feedback', style: TextStyle(color: AppColors.primary, fontSize: 15)),
-                      subtitle: const Text('Vibration pulse on every valid tap', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                      subtitle: const Text('Vibration pulse on every valid tap and button click', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
                       value: settings.hapticsEnabled,
                       activeThumbColor: AppColors.primary,
                       onChanged: (val) => settings.toggleHaptics(val),
@@ -475,20 +477,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const Divider(),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: Text('Sound FX', style: TextStyle(color: AppColors.primary, fontSize: 15)),
+                      title: const Text('Sound FX', style: TextStyle(color: AppColors.primary, fontSize: 15)),
                       subtitle: const Text('Audio clicks and bonus chimes', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
                       value: settings.soundEnabled,
                       activeThumbColor: AppColors.primary,
-                      onChanged: (val) => settings.toggleSound(val),
+                      onChanged: (val) {
+                        HapticService.selectionClick();
+                        settings.toggleSound(val);
+                      },
                     ),
                     const Divider(),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: Text('Low Power Mode', style: TextStyle(color: AppColors.primary, fontSize: 15)),
+                      title: const Text('Low Power Mode', style: TextStyle(color: AppColors.primary, fontSize: 15)),
                       subtitle: const Text('Reduces animations to conserve battery', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
                       value: settings.lowPowerMode,
                       activeThumbColor: AppColors.primary,
-                      onChanged: (val) => settings.toggleLowPowerMode(val),
+                      onChanged: (val) {
+                        HapticService.selectionClick();
+                        settings.toggleLowPowerMode(val);
+                      },
+                    ),
+                    const Divider(),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Push Notifications', style: TextStyle(color: AppColors.primary, fontSize: 15)),
+                      subtitle: const Text('Receive reward and streak alerts', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                      value: settings.notificationsEnabled,
+                      activeThumbColor: AppColors.primary,
+                      onChanged: (val) {
+                        HapticService.selectionClick();
+                        settings.toggleNotifications(val);
+                      },
                     ),
                   ],
                 ),
@@ -538,6 +558,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                   OutlinedButton(
                     onPressed: () async {
+                      HapticService.lightImpact();
                       AppToast.show(context, message: 'Checking for TapX updates...');
                       final updateData = await ApiService.checkAppUpdate('1.0.0');
                       if (context.mounted) {
@@ -594,6 +615,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                   OutlinedButton(
                     onPressed: () {
+                      HapticService.lightImpact();
                       if (user.isGuest) {
                         AppToast.show(
                           context,
@@ -626,6 +648,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                   ElevatedButton(
                     onPressed: () {
+                      HapticService.lightImpact();
                       auth.logout();
                     },
                     style: ElevatedButton.styleFrom(

@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../services/haptic_service.dart';
 
 /// Ultra-premium iOS / Nsave style pull-to-refresh with spinning flower activity indicator.
 /// Built using CupertinoSliverRefreshControl to ensure 100% native smooth physics,
@@ -36,7 +36,7 @@ class AppPullToRefresh extends StatelessWidget {
             refreshTriggerPullDistance: 75.0,
             refreshIndicatorExtent: 52.0,
             onRefresh: () async {
-              HapticFeedback.mediumImpact();
+              HapticService.mediumImpact();
               await Future.wait([
                 onRefresh(),
                 Future.delayed(const Duration(milliseconds: 1200)),

@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/floating_particle.dart';
 import '../services/api_service.dart';
+import '../services/haptic_service.dart';
 
 class TapEngineProvider extends ChangeNotifier {
   static const String _keyScore = 'tapx_engine_score';
@@ -323,11 +323,11 @@ class TapEngineProvider extends ChangeNotifier {
     // Haptics
     if (hapticsEnabled) {
       if (_comboCount % 25 == 0) {
-        HapticFeedback.heavyImpact();
+        HapticService.heavyImpact();
       } else if (_comboCount % 5 == 0) {
-        HapticFeedback.mediumImpact();
+        HapticService.mediumImpact();
       } else {
-        HapticFeedback.lightImpact();
+        HapticService.lightImpact();
       }
     }
 

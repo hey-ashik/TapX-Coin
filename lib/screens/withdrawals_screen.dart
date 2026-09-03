@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/transaction_model.dart';
 import '../providers/auth_provider.dart';
 import '../providers/wallet_provider.dart';
+import '../services/haptic_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_pull_to_refresh.dart';
 import '../widgets/withdrawal_modal.dart';
@@ -93,6 +93,7 @@ class _WithdrawalsScreenState extends State<WithdrawalsScreen> {
               height: 50,
               child: ElevatedButton(
                 onPressed: () {
+                  HapticService.lightImpact();
                   Navigator.pop(ctx);
                   context.read<AuthProvider>().logout();
                 },
@@ -120,7 +121,10 @@ class _WithdrawalsScreenState extends State<WithdrawalsScreen> {
               width: double.infinity,
               height: 46,
               child: TextButton(
-                onPressed: () => Navigator.pop(ctx),
+                onPressed: () {
+                  HapticService.lightImpact();
+                  Navigator.pop(ctx);
+                },
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.textSecondary,
                   shape: RoundedRectangleBorder(
@@ -211,7 +215,7 @@ class _WithdrawalsScreenState extends State<WithdrawalsScreen> {
                             behavior: HitTestBehavior.opaque,
                             onTap: () {
                               if (wallet.currency != CurrencyType.bdt) {
-                                HapticFeedback.lightImpact();
+                                HapticService.selectionClick();
                                 wallet.setCurrency(CurrencyType.bdt);
                                 setState(() {});
                               }
@@ -236,7 +240,7 @@ class _WithdrawalsScreenState extends State<WithdrawalsScreen> {
                             behavior: HitTestBehavior.opaque,
                             onTap: () {
                               if (wallet.currency != CurrencyType.usd) {
-                                HapticFeedback.lightImpact();
+                                HapticService.selectionClick();
                                 wallet.setCurrency(CurrencyType.usd);
                                 setState(() {});
                               }
@@ -434,6 +438,7 @@ class _WithdrawalsScreenState extends State<WithdrawalsScreen> {
             height: 54,
             child: ElevatedButton(
               onPressed: () {
+                HapticService.mediumImpact();
                 final auth = context.read<AuthProvider>();
                 if (auth.currentUser.isGuest) {
                   _showGuestWithdrawalNotice(context);

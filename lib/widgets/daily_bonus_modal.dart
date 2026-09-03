@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/tap_engine_provider.dart';
+import '../services/haptic_service.dart';
 import '../theme/app_colors.dart';
 import 'app_toast.dart';
 
@@ -407,6 +408,7 @@ class _DailyBonusModalState extends State<DailyBonusModal> with SingleTickerProv
                   onPressed: isClaimed
                       ? null
                       : () {
+                          HapticService.mediumImpact();
                           final claimedAmount = tapEngine.currentDayBonusAmount;
                           tapEngine.claimDailyBonus();
                           Navigator.pop(context);
@@ -441,7 +443,10 @@ class _DailyBonusModalState extends State<DailyBonusModal> with SingleTickerProv
 
               // Close TextButton
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  HapticService.lightImpact();
+                  Navigator.pop(context);
+                },
                 child: const Text(
                   'Close',
                   style: TextStyle(

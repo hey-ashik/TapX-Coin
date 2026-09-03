@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/leaderboard_entry.dart';
@@ -7,6 +6,7 @@ import '../models/user_model.dart';
 import '../providers/auth_provider.dart';
 import '../providers/tap_engine_provider.dart';
 import '../providers/wallet_provider.dart';
+import '../services/haptic_service.dart';
 import '../theme/app_colors.dart';
 import 'activity_bar_chart.dart';
 import 'app_avatar.dart';
@@ -104,7 +104,7 @@ class _UserProfileModalState extends State<UserProfileModal> {
                   behavior: HitTestBehavior.opaque,
                   onTap: () {
                     if (_selectedTab != 0) {
-                      HapticFeedback.lightImpact();
+                      HapticService.lightImpact();
                       setState(() {
                         _selectedTab = 0;
                       });
@@ -130,7 +130,7 @@ class _UserProfileModalState extends State<UserProfileModal> {
                   behavior: HitTestBehavior.opaque,
                   onTap: () {
                     if (_selectedTab != 1) {
-                      HapticFeedback.lightImpact();
+                      HapticService.lightImpact();
                       setState(() {
                         _selectedTab = 1;
                       });
@@ -225,7 +225,10 @@ class _UserProfileModalState extends State<UserProfileModal> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      HapticService.lightImpact();
+                      Navigator.pop(context);
+                    },
                     icon: const Icon(Icons.close, color: AppColors.textMuted),
                   ),
                   Text(

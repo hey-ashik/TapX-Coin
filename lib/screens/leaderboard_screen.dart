@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/leaderboard_provider.dart';
 import '../providers/tap_engine_provider.dart';
+import '../services/haptic_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_avatar.dart';
 import '../widgets/app_pull_to_refresh.dart';
@@ -143,7 +143,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       ),
                       IconButton(
                         onPressed: () {
-                          HapticFeedback.lightImpact();
+                          HapticService.lightImpact();
                           LeaderboardSearchModal.show(
                             context,
                             initialTab: leaderboard.selectedTab,
@@ -216,7 +216,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                 behavior: HitTestBehavior.opaque,
                                 onTap: () {
                                   if (leaderboard.selectedTab != 0) {
-                                    HapticFeedback.lightImpact();
+                                    HapticService.lightImpact();
                                     leaderboard.setSelectedTab(0);
                                   }
                                 },
@@ -240,7 +240,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                 behavior: HitTestBehavior.opaque,
                                 onTap: () {
                                   if (leaderboard.selectedTab != 1) {
-                                    HapticFeedback.lightImpact();
+                                    HapticService.lightImpact();
                                     leaderboard.setSelectedTab(1);
                                   }
                                 },
@@ -355,6 +355,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                           return InkWell(
                             key: isCurrentUserItem ? _userRowKey : null,
                             onTap: () {
+                              HapticService.lightImpact();
                               UserProfileModal.show(context, entry: item);
                             },
                             borderRadius: BorderRadius.circular(16),
@@ -538,6 +539,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () {
+                      HapticService.lightImpact();
                       if (userIsInList && _userRowKey.currentContext != null) {
                         Scrollable.ensureVisible(
                           _userRowKey.currentContext!,

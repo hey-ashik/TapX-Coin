@@ -9,11 +9,13 @@ import 'providers/wallet_provider.dart';
 import 'screens/auth_screen.dart';
 import 'screens/main_scaffold_screen.dart';
 import 'services/api_service.dart';
+import 'services/haptic_service.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ApiService.init();
+  await HapticService.init();
 
   final authProvider = AuthProvider();
   await authProvider.restoreSession();
