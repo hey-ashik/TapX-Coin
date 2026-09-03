@@ -494,7 +494,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                         ),
                                       ] else ...[
                                         const Text(
-                                          'Taps',
+                                          'Coins',
                                           style: TextStyle(
                                             fontSize: 10,
                                             color: AppColors.textMuted,
@@ -662,7 +662,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                 ),
                               ),
                               Text(
-                                leaderboard.selectedTab == 1 ? 'Reward' : 'Taps',
+                                leaderboard.selectedTab == 1 ? 'Reward' : 'Coins',
                                 style: const TextStyle(fontSize: 10, color: AppColors.textMuted, fontWeight: FontWeight.w600),
                               ),
                             ],

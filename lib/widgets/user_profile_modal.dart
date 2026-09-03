@@ -1,25 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/leaderboard_entry.dart';
 import '../models/user_model.dart';
 import '../providers/auth_provider.dart';
 import '../providers/tap_engine_provider.dart';
+import '../providers/wallet_provider.dart';
 import '../theme/app_colors.dart';
 import 'activity_bar_chart.dart';
 import 'app_avatar.dart';
 
-class UserProfileModal extends StatelessWidget {
+class UserProfileModal extends StatefulWidget {
   final LeaderboardEntry? entry;
   final UserModel? user;
+  final int initialTab;
 
   const UserProfileModal({
     super.key,
     this.entry,
     this.user,
+    this.initialTab = 0,
   });
 
-  static void show(BuildContext context, {LeaderboardEntry? entry, UserModel? user}) {
+  static void show(BuildContext context, {LeaderboardEntry? entry, UserModel? user, int initialTab = 0}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -31,7 +35,126 @@ class UserProfileModal extends StatelessWidget {
         curve: Curves.easeOutCubic,
         reverseCurve: Curves.easeInCubic,
       ),
-      builder: (context) => UserProfileModal(entry: entry, user: user),
+      builder: (context) => UserProfileModal(
+        entry: entry,
+        user: user,
+        initialTab: (entry?.isRewardEntry == true) ? 1 : initialTab,
+      ),
+    );
+  }
+
+  @override
+  State<UserProfileModal> createState() => _UserProfileModalState();
+}
+
+class _UserProfileModalState extends State<UserProfileModal> {
+  late int _selectedTab; // 0 = Coins, 1 = Rewards
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedTab = (widget.entry?.isRewardEntry == true) ? 1 : widget.initialTab;
+  }
+
+  Widget _buildSlidingToggle() {
+    return Container(
+      width: 152,
+      height: 34,
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSubtle,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.borderStrong, width: 1),
+      ),
+      child: Stack(
+        children: [
+          // Liquid sliding pill indicator
+          IgnorePointer(
+            child: AnimatedAlign(
+              alignment: _selectedTab == 0
+                  ? Alignment.centerLeft
+                  : Alignment.centerRight,
+              duration: const Duration(milliseconds: 260),
+              curve: Curves.easeInOutCubic,
+              child: FractionallySizedBox(
+                widthFactor: 0.5,
+                heightFactor: 1.0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Clickable Labels
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    if (_selectedTab != 0) {
+                      HapticFeedback.lightImpact();
+                      setState(() {
+                        _selectedTab = 0;
+                      });
+                    }
+                  },
+                  child: Center(
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 220),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: _selectedTab == 0
+                            ? AppColors.ctaText
+                            : AppColors.textMuted,
+                      ),
+                      child: const Text('Coins'),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    if (_selectedTab != 1) {
+                      HapticFeedback.lightImpact();
+                      setState(() {
+                        _selectedTab = 1;
+                      });
+                    }
+                  },
+                  child: Center(
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 220),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: _selectedTab == 1
+                            ? AppColors.ctaText
+                            : AppColors.textMuted,
+                      ),
+                      child: const Text('Rewards'),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -40,13 +163,17 @@ class UserProfileModal extends StatelessWidget {
     final numberFormatter = NumberFormat.decimalPattern();
     final rewardFormatter = NumberFormat('#,##0.##');
     final tapEngine = context.watch<TapEngineProvider>();
-
+    final wallet = context.watch<WalletProvider>();
     final auth = context.watch<AuthProvider>();
+
+    final entry = widget.entry;
+    final user = widget.user;
+
     final currentClean = auth.currentUser.username.replaceAll('@', '').trim().toLowerCase();
     final currentNameClean = auth.currentUser.name.replaceAll('@', '').trim().toLowerCase();
     final entryClean = (entry?.username ?? user?.username ?? '').replaceAll('@', '').trim().toLowerCase();
 
-    final isCurrentPlayer = (user != null && user?.id == auth.currentUser.id) || 
+    final isCurrentPlayer = (user != null && user.id == auth.currentUser.id) || 
                            (entryClean.isNotEmpty && (entryClean == currentClean || entryClean == currentNameClean)) ||
                            (entry == null && user == null);
     final username = isCurrentPlayer ? auth.currentUser.username : (entry?.username ?? user?.username ?? 'Tapper');
@@ -91,7 +218,7 @@ class UserProfileModal extends StatelessWidget {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               // Modal Header
               Row(
@@ -111,7 +238,15 @@ class UserProfileModal extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+
+              // Sliding toggle positioned on top right below the 3 dots
+              Padding(
+                padding: const EdgeInsets.only(right: 6, top: 2, bottom: 8),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: _buildSlidingToggle(),
+                ),
+              ),
 
               // Profile Avatar
               Center(
@@ -160,104 +295,317 @@ class UserProfileModal extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // Bento Stats Box
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceCard,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.borderSubtle),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            entry?.isRewardEntry == true ? 'TOTAL REWARD' : 'TOTAL SCORE',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: AppColors.textMuted,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            entry?.isRewardEntry == true
-                                ? '${entry!.rewardCurrency}${rewardFormatter.format(entry!.rewardAmount ?? entry!.score)}'
-                                : numberFormatter.format(totalTaps),
-                            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                  letterSpacing: -0.5,
-                                  fontSize: 22,
-                                ),
-                          ),
-                        ],
-                      ),
+              // Animated Transition for Coins vs Rewards profile views
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 320),
+                reverseDuration: const Duration(milliseconds: 280),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  final isRewards = child.key == const ValueKey('profile_rewards_view');
+                  final inOffset = isRewards
+                      ? const Offset(0.25, 0.0)
+                      : const Offset(-0.25, 0.0);
+                  final slideAnimation = Tween<Offset>(
+                    begin: inOffset,
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceCard,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.borderSubtle),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'CURRENT STREAK',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: AppColors.textMuted,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              Text(
-                                'Day $streakDays',
-                                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                      letterSpacing: -0.5,
-                                      fontSize: 20,
-                                    ),
-                              ),
-                              const SizedBox(width: 6),
-                              const Icon(
-                                Icons.local_fire_department,
-                                color: AppColors.primary,
-                                size: 22,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                  );
+                  return FadeTransition(
+                    opacity: CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeInOut,
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // 7-Day Activity Chart
-              ActivityBarChart(
-                activityRates: activityRates,
-                rawTapCounts: (entry?.isRewardEntry == true)
-                    ? null
-                    : (isCurrentPlayer
-                        ? tapEngine.weeklyTaps
-                        : (entry?.rawWeeklyTaps ?? _getAccurateWeeklyCounts(entry?.score ?? user?.totalTaps ?? 0))),
-                rawRewardAmounts: (entry?.isRewardEntry == true)
-                    ? _getAccurateWeeklyRewardAmounts(entry!.rewardAmount ?? entry!.score.toDouble())
-                    : null,
-                isReward: entry?.isRewardEntry ?? false,
-                currencySymbol: entry?.rewardCurrency ?? '৳',
+                    child: SlideTransition(
+                      position: slideAnimation,
+                      child: child,
+                    ),
+                  );
+                },
+                child: _selectedTab == 0
+                    ? _buildCoinsView(
+                        key: const ValueKey('profile_coins_view'),
+                        context: context,
+                        numberFormatter: numberFormatter,
+                        totalTaps: totalTaps,
+                        streakDays: streakDays,
+                        activityRates: activityRates,
+                        isCurrentPlayer: isCurrentPlayer,
+                        weeklyTaps: tapEngine.weeklyTaps,
+                        rawWeeklyTaps: entry?.rawWeeklyTaps,
+                        score: entry?.score ?? user?.totalTaps ?? 0,
+                      )
+                    : _buildRewardsView(
+                        key: const ValueKey('profile_rewards_view'),
+                        context: context,
+                        rewardFormatter: rewardFormatter,
+                        entry: entry,
+                        isCurrentPlayer: isCurrentPlayer,
+                        walletBalance: wallet.balance,
+                        walletCurrencySymbol: wallet.currencySymbol,
+                        walletTransactions: wallet.transactions,
+                        score: entry?.score ?? user?.totalTaps ?? 0,
+                        streakDays: streakDays,
+                        activityRates: activityRates,
+                        weeklyTaps: tapEngine.weeklyTaps,
+                      ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCoinsView({
+    required Key key,
+    required BuildContext context,
+    required NumberFormat numberFormatter,
+    required int totalTaps,
+    required int streakDays,
+    required List<double> activityRates,
+    required bool isCurrentPlayer,
+    required List<int> weeklyTaps,
+    required List<int>? rawWeeklyTaps,
+    required int score,
+  }) {
+    return Column(
+      key: key,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Bento Stats Box
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceCard,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.borderSubtle),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'TOTAL COINS',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textMuted,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      numberFormatter.format(totalTaps),
+                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                            letterSpacing: -0.5,
+                            fontSize: 22,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceCard,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.borderSubtle),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'CURRENT STREAK',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textMuted,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Text(
+                          'Day $streakDays',
+                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                letterSpacing: -0.5,
+                                fontSize: 20,
+                              ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Icon(
+                          Icons.local_fire_department,
+                          color: AppColors.primary,
+                          size: 22,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+
+        // 7-Day Activity Chart
+        ActivityBarChart(
+          activityRates: activityRates,
+          rawTapCounts: isCurrentPlayer
+              ? weeklyTaps
+              : (rawWeeklyTaps ?? _getAccurateWeeklyCounts(score)),
+          rawRewardAmounts: null,
+          isReward: false,
+          currencySymbol: '৳',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRewardsView({
+    required Key key,
+    required BuildContext context,
+    required NumberFormat rewardFormatter,
+    required LeaderboardEntry? entry,
+    required bool isCurrentPlayer,
+    required double walletBalance,
+    required String walletCurrencySymbol,
+    required List<dynamic> walletTransactions,
+    required int score,
+    required int streakDays,
+    required List<double> activityRates,
+    required List<int> weeklyTaps,
+  }) {
+    final String rewardCurrency = entry?.rewardCurrency ?? (isCurrentPlayer ? walletCurrencySymbol : '৳');
+    final double rewardVal = (entry?.rewardAmount != null)
+        ? entry!.rewardAmount!
+        : (isCurrentPlayer ? walletBalance : (score / 1000.0));
+
+    final bool hasPayout = entry?.rewardMethod != null ||
+        (isCurrentPlayer && walletTransactions.isNotEmpty);
+    final String payoutText = entry?.rewardMethod != null
+        ? 'Paid (${entry!.rewardMethod})'
+        : (isCurrentPlayer && walletTransactions.isNotEmpty
+            ? walletTransactions.first.status.toString().toUpperCase()
+            : 'Day $streakDays');
+
+    return Column(
+      key: key,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Bento Stats Box
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceCard,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.borderSubtle),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'TOTAL REWARD',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textMuted,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '$rewardCurrency${rewardFormatter.format(rewardVal)}',
+                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                            letterSpacing: -0.5,
+                            fontSize: 22,
+                            color: const Color(0xFF22C55E),
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceCard,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.borderSubtle),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      hasPayout ? 'PAYOUT STATUS' : 'CURRENT STREAK',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textMuted,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        if (hasPayout) ...[
+                          const Icon(
+                            Icons.check_circle_rounded,
+                            color: Color(0xFF22C55E),
+                            size: 18,
+                          ),
+                          const SizedBox(width: 6),
+                        ],
+                        Flexible(
+                          child: Text(
+                            payoutText,
+                            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                  letterSpacing: -0.5,
+                                  fontSize: hasPayout ? 16 : 20,
+                                  color: hasPayout ? const Color(0xFF22C55E) : null,
+                                ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (!hasPayout) ...[
+                          const SizedBox(width: 6),
+                          const Icon(
+                            Icons.local_fire_department,
+                            color: AppColors.primary,
+                            size: 22,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+
+        // 7-Day Rewards Chart
+        ActivityBarChart(
+          activityRates: activityRates,
+          rawTapCounts: null,
+          rawRewardAmounts: isCurrentPlayer
+              ? weeklyTaps.map((c) => (c / 1000.0)).toList()
+              : (entry?.isRewardEntry == true
+                  ? _getAccurateWeeklyRewardAmounts(entry!.rewardAmount ?? entry.score.toDouble())
+                  : _getAccurateWeeklyRewardAmounts(score / 1000.0)),
+          isReward: true,
+          currencySymbol: rewardCurrency,
+        ),
+      ],
     );
   }
 

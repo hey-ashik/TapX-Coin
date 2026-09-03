@@ -519,7 +519,7 @@ class _LeaderboardSearchModalState extends State<LeaderboardSearchModal> {
                                             ),
                                           ] else ...[
                                             const Text(
-                                              'Taps',
+                                              'Coins',
                                               style: TextStyle(
                                                 fontSize: 10,
                                                 color: AppColors.textMuted,
