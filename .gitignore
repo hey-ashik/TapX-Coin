@@ -107,10 +107,6 @@ api/uploads/updates/*
 *.sql.bak
 *.dump
 
-# Environment variables & secrets
-.env
-*.env
-api/.env
 
 # PHP / Web Server logs
 *.log
