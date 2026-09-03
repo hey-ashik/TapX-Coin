@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
@@ -8,6 +10,7 @@ import 'api_service.dart';
 /// Works both when user is inside the app and when app is in the background or newly received.
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
+  static const MethodChannel _nativeChannel = MethodChannel('com.tapx.coin/notifications');
   static bool _isInitialized = false;
   static Timer? _syncTimer;
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -67,6 +70,9 @@ class NotificationService {
 
       // Start periodic sync for new announcements from admin
       startPeriodicSync();
+
+      // Schedule native Android background alarm receiver for outside-of-app notifications
+      scheduleNativeBackgroundCheck();
 
       // Check for welcome or first-time notification
       _handleFirstLaunch();
@@ -195,6 +201,13 @@ class NotificationService {
     });
   }
 
+  /// Ensures native Android AlarmManager is armed to check notifications outside the app
+  static Future<void> scheduleNativeBackgroundCheck() async {
+    try {
+      await _nativeChannel.invokeMethod('scheduleBackgroundCheck');
+    } catch (_) {}
+  }
+
   /// Cancels background sync
   static void stopPeriodicSync() {
     _syncTimer?.cancel();
@@ -211,7 +224,16 @@ class NotificationService {
       if (notifs.isEmpty) return;
 
       final prefs = await SharedPreferences.getInstance();
-      final List<String> notifiedIds = prefs.getStringList(_prefKeyNotifiedIds) ?? [];
+      List<String> notifiedIds = [];
+      try {
+        notifiedIds = prefs.getStringList(_prefKeyNotifiedIds) ?? [];
+      } catch (_) {
+        final raw = prefs.getString(_prefKeyNotifiedIds);
+        if (raw != null && raw.startsWith('[')) {
+          final List decoded = jsonDecode(raw);
+          notifiedIds = decoded.map((e) => e.toString()).toList();
+        }
+      }
 
       bool updated = false;
 
