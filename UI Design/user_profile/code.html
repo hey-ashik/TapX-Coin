@@ -1,0 +1,237 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>User Profile - Soul</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#2a2a2a",
+                        "error-container": "#93000a",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "primary-container": "#e2e2e2",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "background": "#141313",
+                        "surface-container-highest": "#353434",
+                        "on-secondary": "#313030",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "secondary-fixed": "#e5e2e1",
+                        "outline-variant": "#444748",
+                        "text-secondary": "#A1A1AA",
+                        "surface-subtle": "#1A1A1E",
+                        "tertiary-container": "#e2e2e2",
+                        "bg-base": "#000000",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-container": "#636565",
+                        "surface-bright": "#3a3939",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-primary-fixed": "#1a1c1c",
+                        "inverse-primary": "#5d5f5f",
+                        "surface": "#141313",
+                        "on-primary": "#2f3131",
+                        "on-secondary-fixed-variant": "#474646",
+                        "primary-fixed-dim": "#c6c6c7",
+                        "border-subtle": "#27272A",
+                        "primary": "#ffffff",
+                        "primary-fixed": "#e2e2e2",
+                        "surface-container": "#201f1f",
+                        "outline": "#8e9192",
+                        "inverse-surface": "#e5e2e1",
+                        "on-background": "#e5e2e1",
+                        "on-tertiary": "#2f3131",
+                        "on-surface-variant": "#c4c7c8",
+                        "border-strong": "#3F3F46",
+                        "on-primary-container": "#636565",
+                        "on-secondary-container": "#bab8b7",
+                        "surface-tint": "#c6c6c7",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-surface": "#e5e2e1",
+                        "on-error": "#690005",
+                        "secondary": "#c8c6c5",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "surface-dim": "#141313",
+                        "surface-variant": "#353434",
+                        "text-muted": "#71717A",
+                        "secondary-container": "#4a4949",
+                        "inverse-on-surface": "#313030",
+                        "tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "error": "#ffb4ab",
+                        "surface-container-low": "#1c1b1b",
+                        "on-primary-fixed-variant": "#454747"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-page": "1.5rem",
+                        "stack-gap": "0.75rem",
+                        "gutter-card": "1rem",
+                        "tap-target-min": "44px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "metric-counter": ["Plus Jakarta Sans"],
+                        "body-sm": ["Plus Jakarta Sans"],
+                        "body-reg": ["Plus Jakarta Sans"],
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["24px", { "lineHeight": "30px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "metric-counter": ["36px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-reg": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-hero": ["44px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "800" }],
+                        "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.bg-base');
+            color: theme('colors.primary');
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Bar chart animation */
+        @keyframes growUp {
+            from { height: 0; opacity: 0; }
+            to { opacity: 1; }
+        }
+        .bar-anim {
+            animation: growUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transform-origin: bottom;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-[80px] md:pb-0 flex flex-col">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-bg-base dark:bg-bg-base border-b border-border-subtle flex justify-between items-center px-margin-page h-16 flat no shadows">
+<button class="text-primary dark:text-primary hover:bg-on-secondary active:scale-95 transition-transform w-tap-target-min h-tap-target-min flex items-center justify-center rounded-full">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-lg text-headline-lg tracking-tighter text-primary dark:text-primary">Soul</h1>
+<button class="text-primary dark:text-primary hover:bg-on-secondary active:scale-95 transition-transform w-tap-target-min h-tap-target-min flex items-center justify-center rounded-full">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</header>
+<main class="flex-grow pt-24 px-margin-page flex flex-col gap-8 max-w-md mx-auto w-full">
+<!-- Profile Header -->
+<section class="flex flex-col items-center text-center gap-4">
+<div class="relative group cursor-pointer">
+<div class="w-32 h-32 rounded-full overflow-hidden border-2 border-border-subtle relative z-10 bg-surface-subtle">
+<img class="w-full h-full object-cover" data-alt="A striking black and white portrait of a person in a minimalist, high-contrast style. The lighting is dramatic, emphasizing stark geometric shadows across the face. The background is pure black, and the subject's features are defined by crisp white highlights. The mood is intense, modern, and perfectly aligned with a sleek monochrome corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDK7keI7VhtveYwA3WiI-UNPTvelcGUzhgI6XAP6uw_MAqWcxLNxW7Vw5Nk9c8MgTrQBuo6CgGJd1GIKvH7ph7pFMrlVcjgtaM948EVYHF_DUiBE-ndkQoiuQQVU-YM-hVzOBp2vz2IKR1fAo2DSkRMuJ74HVf1_B-bGQ2jjvFO-EBumwmHimWcs8KcJDCP2p6le4-radwQJRFhH9uvUAVhKW3P8QVc2CI_jjzD7r7NcLpDEau8cnKSYA">
+</div>
+<!-- Ambient glow -->
+<div class="absolute inset-0 rounded-full bg-primary opacity-5 blur-xl -z-10 group-hover:opacity-10 transition-opacity"></div>
+</div>
+<div class="flex flex-col items-center gap-1">
+<h2 class="font-metric-counter text-metric-counter">@alex_taps</h2>
+<p class="font-body-reg text-body-reg text-text-muted">Rank #42 • Joined 2024</p>
+</div>
+<!-- Social Links -->
+<div class="flex gap-4 mt-2">
+<a class="w-10 h-10 rounded-full bg-surface-subtle border border-border-subtle flex items-center justify-center hover:bg-border-strong transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">link</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-surface-subtle border border-border-subtle flex items-center justify-center hover:bg-border-strong transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-surface-subtle border border-border-subtle flex items-center justify-center hover:bg-border-strong transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</a>
+</div>
+</section>
+<!-- Stats Bento Box -->
+<section class="grid grid-cols-2 gap-4">
+<div class="bg-[#111111] border border-border-subtle rounded-[24px] p-gutter-card flex flex-col justify-center items-start">
+<span class="font-body-sm text-body-sm text-text-muted mb-1 uppercase tracking-wider">Total Taps</span>
+<span class="font-metric-counter text-metric-counter text-primary tracking-tighter">124k</span>
+</div>
+<div class="bg-[#111111] border border-border-subtle rounded-[24px] p-gutter-card flex flex-col justify-center items-start">
+<span class="font-body-sm text-body-sm text-text-muted mb-1 uppercase tracking-wider">Current Streak</span>
+<div class="flex items-center gap-2">
+<span class="font-metric-counter text-metric-counter text-primary tracking-tighter">14</span>
+<span class="material-symbols-outlined text-primary text-[24px]" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+</div>
+</div>
+</section>
+<!-- Activity Chart -->
+<section class="bg-[#111111] border border-border-subtle rounded-[24px] p-gutter-card pb-6">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-headline-md">7-Day Activity</h3>
+<span class="font-body-sm text-body-sm text-text-muted px-3 py-1 bg-surface-subtle rounded-full border border-border-subtle">This Week</span>
+</div>
+<div class="h-48 flex items-end justify-between gap-2 px-2 relative border-b border-border-subtle pb-2"><!-- Y-axis lines -->
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none pb-2">
+<div class="border-t border-border-subtle/50 w-full"></div>
+<div class="border-t border-border-subtle/50 w-full"></div>
+<div class="border-t border-border-subtle/50 w-full"></div>
+</div>
+<!-- Bars -->
+<div class="flex flex-col items-center gap-2 w-full z-10 group">
+<div class="w-full bg-primary rounded-t-sm relative overflow-hidden h-[40%] bar-anim" style="animation-delay: 0.1s"></div>
+<span class="font-body-sm text-body-sm text-text-muted">M</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full z-10 group">
+<div class="w-full bg-primary rounded-t-sm relative overflow-hidden h-[60%] bar-anim" style="animation-delay: 0.2s"></div>
+<span class="font-body-sm text-body-sm text-text-muted">T</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full z-10 group">
+<div class="w-full bg-primary rounded-t-sm relative overflow-hidden h-[30%] bar-anim" style="animation-delay: 0.3s"></div>
+<span class="font-body-sm text-body-sm text-text-muted">W</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full z-10 group">
+<div class="w-full bg-primary rounded-t-sm relative overflow-hidden h-[80%] bar-anim" style="animation-delay: 0.4s"></div>
+<span class="font-body-sm text-body-sm text-text-muted">T</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full z-10 group">
+<div class="w-full bg-primary rounded-t-sm relative overflow-hidden h-[50%] bar-anim" style="animation-delay: 0.5s"></div>
+<span class="font-body-sm text-body-sm text-text-muted">F</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full z-10 group">
+<div class="w-full bg-primary rounded-t-sm relative overflow-hidden h-[95%] bar-anim shadow-[0_0_15px_rgba(255,255,255,0.4)]" style="animation-delay: 0.6s"></div>
+<span class="font-body-sm text-body-sm text-primary font-bold">S</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full z-10 group">
+<div class="w-full bg-primary rounded-t-sm relative overflow-hidden h-[70%] bar-anim" style="animation-delay: 0.7s"></div>
+<span class="font-body-sm text-body-sm text-text-muted">S</span>
+</div></div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-bg-base dark:bg-bg-base border-t border-border-subtle flex justify-around items-center h-tap-target-min py-4 flat no shadows pb-safe">
+<a class="flex flex-col items-center justify-center text-text-muted hover:text-primary active:scale-90 transition-all duration-150 ease-out w-16" href="#">
+<span class="material-symbols-outlined text-[24px]">leaderboard</span>
+<span class="font-body-sm text-body-sm mt-1">Rank</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted hover:text-primary active:scale-90 transition-all duration-150 ease-out w-16" href="#">
+<span class="material-symbols-outlined text-[24px]">touch_app</span>
+<span class="font-body-sm text-body-sm mt-1">Tap</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted hover:text-primary active:scale-90 transition-all duration-150 ease-out w-16" href="#">
+<span class="material-symbols-outlined text-[24px]">payments</span>
+<span class="font-body-sm text-body-sm mt-1">Wallet</span>
+</a>
+<!-- Active Tab -->
+<a class="flex flex-col items-center justify-center text-primary relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-primary after:rounded-full active:scale-90 transition-all duration-150 ease-out w-16" href="#">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-body-sm text-body-sm mt-1">Profile</span>
+</a>
+</nav>
+
+
+</body></html>

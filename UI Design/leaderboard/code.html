@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Global Leaderboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ffb4ab",
+                        "bg-base": "#000000",
+                        "on-secondary": "#313030",
+                        "on-secondary-fixed-variant": "#474646",
+                        "on-surface": "#e5e2e1",
+                        "background": "#141313",
+                        "primary-fixed": "#e2e2e2",
+                        "on-primary": "#2f3131",
+                        "surface-dim": "#141313",
+                        "secondary": "#c8c6c5",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "on-surface-variant": "#c4c7c8",
+                        "surface-tint": "#c6c6c7",
+                        "on-primary-container": "#636565",
+                        "surface": "#141313",
+                        "on-secondary-container": "#bab8b7",
+                        "surface-variant": "#353434",
+                        "text-muted": "#71717A",
+                        "border-subtle": "#27272A",
+                        "on-tertiary-container": "#636565",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "on-error-container": "#ffdad6",
+                        "on-error": "#690005",
+                        "on-primary-fixed": "#1a1c1c",
+                        "tertiary-container": "#e2e2e2",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "primary": "#ffffff",
+                        "on-tertiary": "#2f3131",
+                        "secondary-fixed": "#e5e2e1",
+                        "surface-bright": "#3a3939",
+                        "surface-container": "#201f1f",
+                        "tertiary": "#ffffff",
+                        "error-container": "#93000a",
+                        "tertiary-fixed": "#e2e2e2",
+                        "text-secondary": "#A1A1AA",
+                        "surface-container-high": "#2a2a2a",
+                        "on-background": "#e5e2e1",
+                        "outline-variant": "#444748",
+                        "inverse-primary": "#5d5f5f",
+                        "surface-subtle": "#1A1A1E",
+                        "secondary-container": "#4a4949",
+                        "surface-container-low": "#1c1b1b",
+                        "inverse-surface": "#e5e2e1",
+                        "outline": "#8e9192",
+                        "surface-container-lowest": "#0e0e0e",
+                        "border-strong": "#3F3F46",
+                        "on-primary-fixed-variant": "#454747",
+                        "primary-container": "#e2e2e2",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "surface-container-highest": "#353434",
+                        "inverse-on-surface": "#313030",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "primary-fixed-dim": "#c6c6c7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-gap": "0.75rem",
+                        "margin-page": "1.5rem",
+                        "tap-target-min": "44px",
+                        "gutter-card": "1rem"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "metric-counter": ["Plus Jakarta Sans"],
+                        "body-reg": ["Plus Jakarta Sans"],
+                        "body-sm": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "display-hero": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["24px", { "lineHeight": "30px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "metric-counter": ["36px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-reg": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-hero": ["44px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            -webkit-font-smoothing: antialiased;
+        }
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+    </style>
+</head>
+<body class="bg-bg-base text-primary min-h-screen pb-[100px]">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 bg-bg-base dark:bg-bg-base border-b border-border-subtle flex justify-between items-center px-margin-page h-16">
+<button class="text-primary dark:text-primary active:scale-95 transition-transform hover:bg-on-secondary rounded-full p-2 -ml-2 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+<h1 class="font-headline-lg text-headline-lg tracking-tighter text-primary dark:text-primary">TAP_CORE</h1>
+<button class="text-primary dark:text-primary active:scale-95 transition-transform hover:bg-on-secondary rounded-full p-2 -mr-2 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="pt-24 px-margin-page max-w-2xl mx-auto flex flex-col gap-6">
+<!-- Header & Toggles -->
+<div class="flex flex-col gap-4">
+<h2 class="font-headline-lg text-headline-lg text-primary text-center">Global Rankings</h2>
+<div class="flex bg-surface-subtle p-1 rounded-xl">
+<button class="flex-1 py-2 px-4 rounded-lg bg-primary text-bg-base font-body-sm text-body-sm shadow-sm transition-all duration-200 text-center">
+                    Global All-Time
+                </button>
+<button class="flex-1 py-2 px-4 rounded-lg text-text-muted hover:text-primary font-body-sm text-body-sm transition-all duration-200 text-center">
+                    Weekly Top 10
+                </button>
+</div>
+</div>
+<!-- Banner -->
+<div class="border border-border-subtle bg-surface-dim rounded-xl p-4 flex items-start gap-4">
+<span class="material-symbols-outlined text-text-muted" data-icon="info">info</span>
+<div class="flex flex-col gap-1">
+<p class="font-headline-md text-headline-md text-primary">Cash Payout Eligibility</p>
+<p class="font-body-reg text-body-reg text-text-muted">The top 10 users globally at the end of the month are eligible for cash payouts. Keep tapping.</p>
+</div>
+</div>
+<!-- Leaderboard List -->
+<div class="flex flex-col gap-3">
+<!-- Rank 1 -->
+<div class="bg-[#111111] rounded-[16px] p-gutter-card flex items-center justify-between border border-border-subtle">
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full bg-primary text-bg-base flex items-center justify-center font-headline-md text-headline-md">1</div>
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A futuristic avatar of a user in a monochrome high-contrast style. Pure whites and deep blacks, abstract geometric facial features, minimal and corporate digital aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVl6kTAIoikwomxQUvkjgPQ0LIfU_iPu7rX9-LuID8uIMW_xvWBrwkL2AIGuLaUTymawb1G8kufHmBh-1r8pqQ75QfWfxzDK3ni3WzUYGBdWAMgs7H3tGG7wUhaigHXxPAoDObJ3it3gNU2DdakVaADDtj-NdR6UrbcmwEUdOLJqHZbOKhzddm9jfBOCpGBAOc3a5UytSFBbIZciYGd1L-B_6zv6AktJxnBJlhy06MIo5Syz9Slrlb0g"/>
+<span class="font-headline-md text-headline-md text-primary">QuantumTap</span>
+</div>
+<div class="font-metric-counter text-metric-counter text-primary tabular-nums tracking-tight">84,902</div>
+</div>
+<!-- Rank 2 -->
+<div class="bg-[#111111] rounded-[16px] p-gutter-card flex items-center justify-between border border-border-subtle">
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full bg-primary text-bg-base flex items-center justify-center font-headline-md text-headline-md">2</div>
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A sleek minimalist user avatar icon. Abstract wireframe sphere on a pure black background with sharp white contrast. Professional modern digital vibe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuALzW4hZ0At8bPosoZ5P3P1CYkrQ1wn3kyb_u9DTPg31ljbVswBeTfQZD3_GC52IGBi1IXc_pMCmD3dTRhDJeAtd6wVwMyZBqc_Rc4i7IpxQCf1BmAO9OILRXoLWRg-8KB8DPrZJfHr4ilMt6gPZCKDHYIzJxaEyosVVHtHrmhSf9mL5mT8A1tq75ISCaIMvqjZMZNkhkEULdAYoDISbut9qQi4fuD2W6V0CCcHCwSg8fzT3g1ldlnA9Q"/>
+<span class="font-headline-md text-headline-md text-primary">ZeroPoint</span>
+</div>
+<div class="font-metric-counter text-metric-counter text-primary tabular-nums tracking-tight">82,115</div>
+</div>
+<!-- Rank 3 -->
+<div class="bg-[#111111] rounded-[16px] p-gutter-card flex items-center justify-between border border-border-subtle">
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full bg-primary text-bg-base flex items-center justify-center font-headline-md text-headline-md">3</div>
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A high-contrast monochrome digital portrait of a user. Shadowy silhouette with intense white rim lighting. Corporate minimalist design language." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUXF8YFLe61PNsjLz8RH-8pvMFMWv-Hw2hoWYwbDKYPiJxEf65Pn_RoEKm5JCxkEyT8Xbg_8n8QdZ-xjlyLt-5IYX8Ukdg86AN_KqF5FsbU3IezqxwqEuZ3lPIqehRVMyetj5ffC7awF5Iy0ukUONg9W3U_WmnsZn1s2v5VQPxc6At3vX4XFkQgsh1L7mvBXI-stHarDJyAH_ojnRLZuJE9jE6kF5tT5Ey_-3zEdm1C4z245om8oTddw"/>
+<span class="font-headline-md text-headline-md text-primary">AlphaStrike</span>
+</div>
+<div class="font-metric-counter text-metric-counter text-primary tabular-nums tracking-tight">79,440</div>
+</div>
+<!-- Rank 4 -->
+<div class="bg-[#111111] rounded-[16px] p-gutter-card flex items-center justify-between border border-border-subtle">
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full flex items-center justify-center font-headline-md text-headline-md text-text-muted">4</div>
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A dark mode avatar featuring abstract geometric shapes overlapping. Pure black background with subtle white lines. Clean and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzl3UCzuHb7Zv1NUqpqpISPnpPTpVthadcn8B9rFxzjq8BduKwQitxgTpLknA8lD58U6UIXggdoT_Pu6wIVq_dWcrT0DZ1XG-WYs53xty_WJB3JpKcDHKMcHWBi-AZl2et_JXq5CUHHgzA7D9IRJg11kd-zu9AsKC4xM7uRdLLPHGAzLSxx7mF_dhpH5Q8EiikfS8cHX5KdaI6nz-BoYYNMmfOijgJzcU63tJ8KjtbW6n9jXEoMKzf3Q"/>
+<span class="font-headline-md text-headline-md text-primary">NeonGhost</span>
+</div>
+<div class="font-metric-counter text-[24px] font-[800] leading-[30px] text-primary tabular-nums tracking-tight">75,091</div>
+</div>
+<!-- Rank 5 -->
+<div class="bg-[#111111] rounded-[16px] p-gutter-card flex items-center justify-between border border-border-subtle">
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full flex items-center justify-center font-headline-md text-headline-md text-text-muted">5</div>
+<img class="w-10 h-10 rounded-full object-cover" data-alt="Minimalist digital avatar. A stark white cube suspended in infinite black void. High contrast, sharp edges, modern corporate feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuChauOIwImqztuBihJazjH9zc_vLLEcNpoHBHb5CxEQvLHgPjfkpmUIEIGhdYzozt6jHTTL_9XFHIPeP83I0KstaKMLJgRwdVe8T3ZANnHsnGvn3i91KVzB05fVZqwjkTcYXykNYQ6HhXHocdll46FTqnK3J6U1OYXqTgTZ9_3xE14cQzPcMelMtGtBcU6Dx7H9jgOLSV0O-2istcuv_9Ds4UnS4Ro4eytQD4RJSytU7MF6MnJmwgav-w"/>
+<span class="font-headline-md text-headline-md text-primary">VoidWalker</span>
+</div>
+<div class="font-metric-counter text-[24px] font-[800] leading-[30px] text-primary tabular-nums tracking-tight">71,200</div>
+</div>
+<!-- Rank 6 -->
+<div class="bg-[#111111] rounded-[16px] p-gutter-card flex items-center justify-between border border-border-subtle">
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full flex items-center justify-center font-headline-md text-headline-md text-text-muted">6</div>
+<img class="w-10 h-10 rounded-full object-cover" data-alt="Abstract geometric avatar in high contrast black and white. Concentric circles forming a digital eye. Sleek, professional, modern." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4TCIA-Vwl70Ix85RTPbAvXZC3_WzeRnwkv752SfrA48fEGk-ByHgkRUxtvlixo6Lh5zfl6DZnhq6g8Ekxo9A3aLCXWWExm0B-CmCMJumktOprcPT05-hp0dqa6v1_PNXxFAtlrXA544hU3wMr6n63qwnG07TYK_qp5zD6ibhKtlY0GxDcZT5IfLABieNnYQaOctYAlGHDRomlzxBnU-kcC7GcTsV2dIKaO3vzWrIlryg7pzEjYhA18A"/>
+<span class="font-headline-md text-headline-md text-primary">EchoSystem</span>
+</div>
+<div class="font-metric-counter text-[24px] font-[800] leading-[30px] text-primary tabular-nums tracking-tight">68,950</div>
+</div>
+</div>
+</main>
+<!-- Bottom Nav Bar -->
+<nav class="fixed bottom-0 w-full z-50 bg-bg-base dark:bg-bg-base border-t border-border-subtle flex justify-around items-center h-tap-target-min py-4">
+<button class="flex flex-col items-center justify-center text-primary relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-primary after:rounded-full font-body-sm text-body-sm active:scale-90 transition-all duration-150 ease-out p-2">
+<span class="material-symbols-outlined mb-1" data-icon="leaderboard" data-weight="fill" style="font-variation-settings: 'FILL' 1;">leaderboard</span>
+</button>
+<button class="flex flex-col items-center justify-center text-text-muted font-body-sm text-body-sm hover:text-primary active:scale-90 transition-all duration-150 ease-out p-2">
+<span class="material-symbols-outlined mb-1" data-icon="touch_app">touch_app</span>
+</button>
+<button class="flex flex-col items-center justify-center text-text-muted font-body-sm text-body-sm hover:text-primary active:scale-90 transition-all duration-150 ease-out p-2">
+<span class="material-symbols-outlined mb-1" data-icon="payments">payments</span>
+</button>
+<button class="flex flex-col items-center justify-center text-text-muted font-body-sm text-body-sm hover:text-primary active:scale-90 transition-all duration-150 ease-out p-2">
+<span class="material-symbols-outlined mb-1" data-icon="settings">settings</span>
+</button>
+</nav>
+</body></html>

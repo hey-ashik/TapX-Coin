@@ -1,0 +1,162 @@
+# ==============================================================================
+# Git Ignore Configuration for Soul - TapTap (Flutter + PHP Backend)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Flutter & Dart Build Outputs & Caches
+# ------------------------------------------------------------------------------
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+coverage/
+**/doc/api/
+.widget_preview/
+
+# Symbolication & Obfuscation artifacts
+app.*.symbols
+app.*.map.json
+
+# ------------------------------------------------------------------------------
+# 2. Android
+# ------------------------------------------------------------------------------
+# 2. Android
+# ------------------------------------------------------------------------------
+**/android/.gradle/
+**/android/captures/
+**/android/local.properties
+**/android/key.properties
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+**/android/GeneratedPluginRegistrant.java
+**/android/.cxx/
+
+# Allow gradle wrapper so repo builds out of the box on other systems
+!**/android/gradle/wrapper/gradle-wrapper.jar
+!**/android/gradlew
+!**/android/gradlew.bat
+
+# Keystores & Signing Keys (NEVER commit to GitHub!)
+*.keystore
+*.jks
+
+# ------------------------------------------------------------------------------
+# 3. iOS & macOS
+# ------------------------------------------------------------------------------
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/ServiceDefinitions.json
+**/ios/**/GeneratedPluginRegistrant.*
+
+**/macos/Flutter/ephemeral/
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Xcode user data & derived data
+**/DerivedData/
+*.mode1v3
+*.mode2v3
+*.moved-aside
+*.pbxuser
+*.perspectivev3
+xcuserdata/
+!default.mode1v3
+!default.mode2v3
+!default.pbxuser
+!default.perspectivev3
+
+# ------------------------------------------------------------------------------
+# 4. Windows & Linux Desktop Runners
+# ------------------------------------------------------------------------------
+**/windows/flutter/ephemeral/
+**/windows/x64/
+**/windows/x86/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.[Cc]ache
+!*.[Cc]ache/
+
+**/linux/flutter/ephemeral/
+
+# ------------------------------------------------------------------------------
+# 5. Backend (PHP / API)
+# ------------------------------------------------------------------------------
+# User uploads and app update binaries (Keep .gitkeep to preserve directory structure)
+api/uploads/avatars/*
+!api/uploads/avatars/.gitkeep
+api/uploads/updates/*
+!api/uploads/updates/.gitkeep
+
+# Database dumps and backup files
+*.sql.gz
+*.sql.bak
+*.dump
+
+# PHP / Web Server logs
+*.log
+error_log
+access_log
+
+# Composer dependencies (if used in future)
+**/vendor/
+
+# ------------------------------------------------------------------------------
+# 6. IDEs, Editors & Developer Tools
+# ------------------------------------------------------------------------------
+# IntelliJ IDEA / Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Visual Studio Code
+.vscode/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# AI Agent & Local Tooling Caches
+.agents/
+.system_generated/
+.history/
+
+# ------------------------------------------------------------------------------
+# 7. Operating System Artifacts
+# ------------------------------------------------------------------------------
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux / Generic temporary files
+*.swp
+*.swo
+*~
+*.bak
+*.tmp

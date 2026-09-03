@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Withdrawals &amp; Rewards</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ffb4ab",
+                    "bg-base": "#000000",
+                    "on-secondary": "#313030",
+                    "on-secondary-fixed-variant": "#474646",
+                    "on-surface": "#e5e2e1",
+                    "background": "#141313",
+                    "primary-fixed": "#e2e2e2",
+                    "on-primary": "#2f3131",
+                    "surface-dim": "#141313",
+                    "secondary": "#c8c6c5",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "on-surface-variant": "#c4c7c8",
+                    "surface-tint": "#c6c6c7",
+                    "on-primary-container": "#636565",
+                    "surface": "#141313",
+                    "on-secondary-container": "#bab8b7",
+                    "surface-variant": "#353434",
+                    "text-muted": "#71717A",
+                    "border-subtle": "#27272A",
+                    "on-tertiary-container": "#636565",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "on-error-container": "#ffdad6",
+                    "on-error": "#690005",
+                    "on-primary-fixed": "#1a1c1c",
+                    "tertiary-container": "#e2e2e2",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "primary": "#ffffff",
+                    "on-tertiary": "#2f3131",
+                    "secondary-fixed": "#e5e2e1",
+                    "surface-bright": "#3a3939",
+                    "surface-container": "#201f1f",
+                    "tertiary": "#ffffff",
+                    "error-container": "#93000a",
+                    "tertiary-fixed": "#e2e2e2",
+                    "text-secondary": "#A1A1AA",
+                    "surface-container-high": "#2a2a2a",
+                    "on-background": "#e5e2e1",
+                    "outline-variant": "#444748",
+                    "inverse-primary": "#5d5f5f",
+                    "surface-subtle": "#1A1A1E",
+                    "secondary-container": "#4a4949",
+                    "surface-container-low": "#1c1b1b",
+                    "inverse-surface": "#e5e2e1",
+                    "outline": "#8e9192",
+                    "surface-container-lowest": "#0e0e0e",
+                    "border-strong": "#3F3F46",
+                    "on-primary-fixed-variant": "#454747",
+                    "primary-container": "#e2e2e2",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "surface-container-highest": "#353434",
+                    "inverse-on-surface": "#313030",
+                    "tertiary-fixed-dim": "#c6c6c7",
+                    "primary-fixed-dim": "#c6c6c7"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-gap": "0.75rem",
+                    "margin-page": "1.5rem",
+                    "tap-target-min": "44px",
+                    "gutter-card": "1rem"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "metric-counter": ["Plus Jakarta Sans"],
+                    "body-reg": ["Plus Jakarta Sans"],
+                    "body-sm": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "display-hero": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "headline-lg": ["24px", {"lineHeight": "30px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "metric-counter": ["36px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "body-reg": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "headline-md": ["18px", {"lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "display-hero": ["44px", {"lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "800"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass-card {
+            background: rgba(17, 17, 17, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid #27272A;
+        }
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27272A;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col items-center">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-bg-base dark:bg-bg-base border-b border-border-subtle flex justify-between items-center px-margin-page h-16 md:hidden">
+<button aria-label="Menu" class="text-primary dark:text-primary active:scale-95 transition-transform p-2 -ml-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_circle</span>
+</button>
+<h1 class="font-headline-lg text-headline-lg tracking-tighter text-primary dark:text-primary">TAP_CORE</h1>
+<button aria-label="Notifications" class="text-primary dark:text-primary active:scale-95 transition-transform p-2 -mr-2 hover:bg-on-secondary rounded-full">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+</header>
+<!-- Top Nav (Desktop) -->
+<header class="hidden md:flex fixed top-0 w-full z-50 bg-bg-base border-b border-border-subtle justify-between items-center px-8 h-20 max-w-7xl mx-auto w-full">
+<div class="flex items-center gap-8">
+<h1 class="font-headline-lg text-headline-lg tracking-tighter text-primary">TAP_CORE</h1>
+<nav class="flex gap-6">
+<a class="text-text-muted hover:text-primary font-body-reg transition-colors" href="#">Leaderboard</a>
+<a class="text-text-muted hover:text-primary font-body-reg transition-colors" href="#">Play</a>
+<a class="text-primary font-body-reg transition-colors relative after:content-[''] after:absolute after:-bottom-2 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:bg-primary after:rounded-full" href="#">Withdraw</a>
+<a class="text-text-muted hover:text-primary font-body-reg transition-colors" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button aria-label="Notifications" class="text-primary active:scale-95 transition-transform p-2 hover:bg-on-secondary rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button aria-label="Profile" class="text-primary active:scale-95 transition-transform p-2 hover:bg-on-secondary rounded-full">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="w-full max-w-2xl flex-1 px-margin-page pt-24 pb-32 md:pt-32 mx-auto flex flex-col gap-6">
+<!-- Page Title -->
+<div class="mb-2">
+<h2 class="font-headline-md text-headline-md text-primary">Withdrawals &amp; Rewards</h2>
+<p class="font-body-reg text-body-reg text-text-muted mt-1">Convert your taps into real value.</p>
+</div>
+<!-- Balance Hero Card -->
+<div class="glass-card rounded-[24px] p-6 flex flex-col items-center justify-center text-center relative overflow-hidden group">
+<!-- Subtle glow effect -->
+<div class="absolute inset-0 bg-primary opacity-0 group-hover:opacity-5 transition-opacity duration-500 rounded-[24px]"></div>
+<p class="font-body-sm text-body-sm text-text-muted uppercase tracking-wider mb-2 z-10">Available Redeemable Balance</p>
+<h3 class="font-display-hero text-display-hero text-primary z-10 tracking-tight">$15.50</h3>
+<div class="mt-4 py-2 px-4 bg-surface-subtle rounded-full border border-border-strong flex items-center gap-2 z-10">
+<span class="material-symbols-outlined text-text-muted text-sm" style="font-variation-settings: 'FILL' 1;">info</span>
+<p class="font-body-sm text-body-sm text-text-muted">Rate: <span class="text-primary font-bold">5,000 taps = $1.00</span></p>
+</div>
+<!-- Decorative minimal lines -->
+<div class="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-border-strong to-transparent opacity-50"></div>
+</div>
+<!-- Progress to next milestone -->
+<div class="flex flex-col gap-2 mt-4">
+<div class="flex justify-between items-end">
+<p class="font-body-reg text-body-reg text-primary">Progress to $25 Milestone</p>
+<p class="font-body-sm text-body-sm text-text-muted">62%</p>
+</div>
+<div class="w-full h-2 bg-surface-subtle rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[62%] transition-all duration-1000 ease-out rounded-none"></div>
+</div>
+</div>
+<!-- Payout Milestones Grid -->
+<div class="mt-6">
+<h4 class="font-headline-md text-headline-md text-primary mb-4">Payout Milestones</h4>
+<div class="grid grid-cols-2 gap-4">
+<!-- Unlocked $5 -->
+<div class="glass-card rounded-[16px] p-4 flex flex-col gap-3 relative cursor-pointer active:scale-[0.98] transition-transform">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">lock_open</span>
+<div class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
+</div>
+<div>
+<h5 class="font-metric-counter text-metric-counter text-primary">$5</h5>
+<p class="font-body-sm text-body-sm text-text-muted">25,000 taps</p>
+</div>
+<div class="absolute inset-0 border border-border-strong rounded-[16px] pointer-events-none opacity-50"></div>
+</div>
+<!-- Unlocked $10 -->
+<div class="glass-card rounded-[16px] p-4 flex flex-col gap-3 relative cursor-pointer active:scale-[0.98] transition-transform bg-[#1A1A1E]">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">lock_open</span>
+<div class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
+</div>
+<div>
+<h5 class="font-metric-counter text-metric-counter text-primary">$10</h5>
+<p class="font-body-sm text-body-sm text-text-muted">50,000 taps</p>
+</div>
+<div class="absolute inset-0 border border-primary opacity-20 rounded-[16px] pointer-events-none"></div>
+</div>
+<!-- Locked $25 -->
+<div class="bg-surface-subtle border border-border-subtle rounded-[16px] p-4 flex flex-col gap-3 opacity-60">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-text-muted">lock</span>
+</div>
+<div>
+<h5 class="font-metric-counter text-metric-counter text-text-muted">$25</h5>
+<p class="font-body-sm text-body-sm text-text-muted">125,000 taps</p>
+</div>
+</div>
+<!-- Locked $50 -->
+<div class="bg-surface-subtle border border-border-subtle rounded-[16px] p-4 flex flex-col gap-3 opacity-60">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-text-muted">lock</span>
+</div>
+<div>
+<h5 class="font-metric-counter text-metric-counter text-text-muted">$50</h5>
+<p class="font-body-sm text-body-sm text-text-muted">250,000 taps</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Activity Mini List -->
+<div class="mt-8 mb-4">
+<h4 class="font-headline-md text-headline-md text-primary mb-4">Recent Withdrawals</h4>
+<div class="glass-card rounded-[16px] divide-y divide-border-subtle">
+<div class="p-4 flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-subtle flex items-center justify-center">
+<span class="material-symbols-outlined text-text-muted text-sm">payments</span>
+</div>
+<div>
+<p class="font-body-reg text-body-reg text-primary">PayPal Transfer</p>
+<p class="font-body-sm text-body-sm text-text-muted">Oct 12, 2023</p>
+</div>
+</div>
+<span class="font-body-reg text-body-reg text-text-muted">-$10.00</span>
+</div>
+<div class="p-4 flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-subtle flex items-center justify-center">
+<span class="material-symbols-outlined text-text-muted text-sm">payments</span>
+</div>
+<div>
+<p class="font-body-reg text-body-reg text-primary">Gift Card</p>
+<p class="font-body-sm text-body-sm text-text-muted">Sep 28, 2023</p>
+</div>
+</div>
+<span class="font-body-reg text-body-reg text-text-muted">-$5.00</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Area (CTA) -->
+<div class="fixed bottom-20 md:bottom-8 left-0 w-full px-margin-page z-40 pointer-events-none flex justify-center">
+<div class="w-full max-w-2xl pointer-events-auto">
+<button class="w-full bg-primary text-bg-base font-headline-md text-headline-md py-4 rounded-[16px] shadow-[0_8px_24px_rgba(0,0,0,0.8)] active:scale-[0.98] transition-transform flex items-center justify-center gap-2">
+<span>Request Payout</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 w-full z-50 bg-bg-base dark:bg-bg-base border-t border-border-subtle flex justify-around items-center h-tap-target-min py-4 md:hidden">
+<button aria-label="leaderboard" class="flex flex-col items-center justify-center text-text-muted hover:text-primary active:scale-90 transition-all duration-150 ease-out w-16">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">leaderboard</span>
+<span class="font-body-sm text-body-sm mt-1 text-[10px]">Rank</span>
+</button>
+<button aria-label="touch_app" class="flex flex-col items-center justify-center text-text-muted hover:text-primary active:scale-90 transition-all duration-150 ease-out w-16">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">touch_app</span>
+<span class="font-body-sm text-body-sm mt-1 text-[10px]">Tap</span>
+</button>
+<!-- Active Tab: payments (Withdraw) -->
+<button aria-label="payments" class="flex flex-col items-center justify-center text-primary relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-primary after:rounded-full hover:text-primary active:scale-90 transition-all duration-150 ease-out w-16">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
+<span class="font-body-sm text-body-sm mt-1 text-[10px]">Payout</span>
+</button>
+<button aria-label="settings" class="flex flex-col items-center justify-center text-text-muted hover:text-primary active:scale-90 transition-all duration-150 ease-out w-16">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+<span class="font-body-sm text-body-sm mt-1 text-[10px]">Settings</span>
+</button>
+</nav>
+<!-- Top/Bottom Gradient Masks for smooth scrolling visual (Mobile) -->
+<div class="fixed top-16 left-0 w-full h-8 bg-gradient-to-b from-bg-base to-transparent pointer-events-none z-30 md:hidden"></div>
+<div class="fixed bottom-16 left-0 w-full h-24 bg-gradient-to-t from-bg-base via-bg-base/80 to-transparent pointer-events-none z-30 md:hidden"></div>
+</body></html>

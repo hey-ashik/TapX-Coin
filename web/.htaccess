@@ -1,0 +1,32 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Prevent rewrite for actual files & directories
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Don't rewrite api or uploads requests
+    RewriteCond %{REQUEST_URI} ^/api [NC]
+    RewriteRule ^ - [L]
+
+    # Rewrite all other paths to index.html (SPA routing)
+    RewriteRule ^ index.html [L]
+</IfModule>
+
+# Caching & MIME types for Flutter Web assets
+<IfModule mod_headers.c>
+    # Cache static assets for fast loading
+    <FilesMatch "\.(js|css|wasm|png|jpg|jpeg|gif|webp|svg|woff|woff2|ttf|eot|ico|json)$">
+        Header set Cache-Control "public, max-age=604800, immutable"
+        Header set Access-Control-Allow-Origin "*"
+    </FilesMatch>
+
+    # HTML & Service Worker should not be cached aggressively
+    <FilesMatch "(index\.html|flutter_service_worker\.js|version\.json)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires 0
+    </FilesMatch>
+</IfModule>

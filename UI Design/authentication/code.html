@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+
+<html class="dark h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>TAP_CORE - Authentication</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "error": "#ffb4ab",
+                      "bg-base": "#000000",
+                      "on-secondary": "#313030",
+                      "on-secondary-fixed-variant": "#474646",
+                      "on-surface": "#e5e2e1",
+                      "background": "#141313",
+                      "primary-fixed": "#e2e2e2",
+                      "on-primary": "#2f3131",
+                      "surface-dim": "#141313",
+                      "secondary": "#c8c6c5",
+                      "on-tertiary-fixed": "#1a1c1c",
+                      "on-surface-variant": "#c4c7c8",
+                      "surface-tint": "#c6c6c7",
+                      "on-primary-container": "#636565",
+                      "surface": "#141313",
+                      "on-secondary-container": "#bab8b7",
+                      "surface-variant": "#353434",
+                      "text-muted": "#71717A",
+                      "border-subtle": "#27272A",
+                      "on-tertiary-container": "#636565",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "on-error-container": "#ffdad6",
+                      "on-error": "#690005",
+                      "on-primary-fixed": "#1a1c1c",
+                      "tertiary-container": "#e2e2e2",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "primary": "#ffffff",
+                      "on-tertiary": "#2f3131",
+                      "secondary-fixed": "#e5e2e1",
+                      "surface-bright": "#3a3939",
+                      "surface-container": "#201f1f",
+                      "tertiary": "#ffffff",
+                      "error-container": "#93000a",
+                      "tertiary-fixed": "#e2e2e2",
+                      "text-secondary": "#A1A1AA",
+                      "surface-container-high": "#2a2a2a",
+                      "on-background": "#e5e2e1",
+                      "outline-variant": "#444748",
+                      "inverse-primary": "#5d5f5f",
+                      "surface-subtle": "#1A1A1E",
+                      "secondary-container": "#4a4949",
+                      "surface-container-low": "#1c1b1b",
+                      "inverse-surface": "#e5e2e1",
+                      "outline": "#8e9192",
+                      "surface-container-lowest": "#0e0e0e",
+                      "border-strong": "#3F3F46",
+                      "on-primary-fixed-variant": "#454747",
+                      "primary-container": "#e2e2e2",
+                      "on-tertiary-fixed-variant": "#454747",
+                      "surface-container-highest": "#353434",
+                      "inverse-on-surface": "#313030",
+                      "tertiary-fixed-dim": "#c6c6c7",
+                      "primary-fixed-dim": "#c6c6c7"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "2xl": "1rem",
+                      "4xl": "2rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-gap": "0.75rem",
+                      "margin-page": "1.5rem",
+                      "tap-target-min": "44px",
+                      "gutter-card": "1rem"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Plus Jakarta Sans"],
+                      "metric-counter": ["Plus Jakarta Sans"],
+                      "body-reg": ["Plus Jakarta Sans"],
+                      "body-sm": ["Plus Jakarta Sans"],
+                      "headline-md": ["Plus Jakarta Sans"],
+                      "display-hero": ["Plus Jakarta Sans"]
+              },
+              "fontSize": {
+                      "headline-lg": ["24px", { "lineHeight": "30px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                      "metric-counter": ["36px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                      "body-reg": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                      "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                      "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                      "display-hero": ["44px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "800" }]
+              }
+            },
+          }
+        }
+    </script>
+<style>
+        /* Custom hide scrollbar for clean UI */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        .segment-active {
+            transform: translateX(0%);
+        }
+        .segment-inactive {
+            transform: translateX(100%);
+        }
+    </style>
+</head>
+<body class="bg-bg-base text-on-surface font-body-reg antialiased h-full flex flex-col overflow-hidden selection:bg-surface-variant selection:text-primary">
+<!-- Top Area: Brand (35%) -->
+<div class="h-[35%] flex flex-col items-center justify-center p-margin-page relative">
+<div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-surface-container-low/20 via-bg-base to-bg-base pointer-events-none"></div>
+<div class="flex flex-col items-center gap-4 z-10">
+<!-- Minimal Brand Mark -->
+<div class="w-16 h-16 rounded-full border border-border-subtle flex items-center justify-center relative shadow-[0_0_40px_rgba(255,255,255,0.05)]">
+<span class="material-symbols-outlined text-primary text-[32px]" style="font-variation-settings: 'FILL' 1;">
+                    fingerprint
+                </span>
+<div class="absolute inset-0 rounded-full border border-primary/20 scale-110"></div>
+</div>
+<!-- Title -->
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">
+                TAP_CORE
+            </h1>
+</div>
+</div>
+<!-- Bottom Sheet: Auth Modal (65%) -->
+<div class="h-[65%] w-full bg-background border-t border-border-subtle rounded-t-4xl flex flex-col p-margin-page shadow-[0_-8px_40px_rgba(0,0,0,0.8)] relative z-20">
+<!-- Drag Handle Indicator -->
+<div class="w-12 h-1 bg-border-strong rounded-full mx-auto mb-6"></div>
+<!-- Segment Switch -->
+<div class="bg-surface-subtle p-1 rounded-full flex relative mb-8">
+<div class="absolute inset-y-1 left-1 right-1 w-[calc(50%-0.25rem)] bg-surface-container-high rounded-full shadow-sm transition-transform duration-300 ease-in-out" id="segment-indicator"></div>
+<button class="flex-1 py-2.5 rounded-full z-10 font-body-sm text-body-sm text-primary transition-colors text-center" onclick="toggleSegment(0)">
+                Sign In
+            </button>
+<button class="flex-1 py-2.5 rounded-full z-10 font-body-sm text-body-sm text-text-muted transition-colors text-center" onclick="toggleSegment(1)">
+                Register
+            </button>
+</div>
+<!-- Form Area -->
+<form class="flex flex-col gap-4" onsubmit="event.preventDefault();">
+<!-- Email Input -->
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors text-[20px]">
+                    mail
+                </span>
+<input class="w-full bg-surface-subtle border border-transparent rounded-2xl py-4 pl-12 pr-4 text-primary font-body-reg text-body-reg placeholder:text-text-muted focus:border-border-strong focus:ring-0 transition-all outline-none" placeholder="Email Address" type="email"/>
+</div>
+<!-- Password Input -->
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors text-[20px]">
+                    lock
+                </span>
+<input class="w-full bg-surface-subtle border border-transparent rounded-2xl py-4 pl-12 pr-12 text-primary font-body-reg text-body-reg placeholder:text-text-muted focus:border-border-strong focus:ring-0 transition-all outline-none" placeholder="Password" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-primary transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility_off</span>
+</button>
+</div>
+<!-- Action Button -->
+<button class="w-full bg-primary text-bg-base font-headline-md text-headline-md rounded-2xl py-4 mt-2 active:scale-[0.96] transition-transform duration-200 flex items-center justify-center gap-2" type="submit">
+                Continue
+                <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</form>
+<!-- Social Auth -->
+<div class="mt-auto pt-6 flex flex-col gap-3">
+<div class="flex items-center gap-4 mb-2">
+<div class="flex-1 h-px bg-border-subtle"></div>
+<span class="font-body-sm text-body-sm text-text-muted uppercase tracking-widest">Or connect with</span>
+<div class="flex-1 h-px bg-border-subtle"></div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<button class="border border-border-subtle bg-surface-dim hover:bg-surface-variant rounded-2xl py-3 flex items-center justify-center gap-2 transition-colors active:scale-95">
+<svg class="w-5 h-5 text-primary fill-current" viewbox="0 0 24 24">
+<path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.62-1.496 3.603-2.998 1.156-1.677 1.636-3.299 1.662-3.377-.026-.013-3.189-1.226-3.215-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.56-1.702z"></path>
+</svg>
+</button>
+<button class="border border-border-subtle bg-surface-dim hover:bg-surface-variant rounded-2xl py-3 flex items-center justify-center gap-2 transition-colors active:scale-95">
+<svg class="w-5 h-5" viewbox="0 0 24 24">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+</svg>
+</button>
+</div>
+</div>
+</div>
+<script>
+        function toggleSegment(index) {
+            const indicator = document.getElementById('segment-indicator');
+            const buttons = indicator.parentElement.querySelectorAll('button');
+            
+            if(index === 0) {
+                indicator.style.transform = 'translateX(0)';
+                buttons[0].classList.replace('text-text-muted', 'text-primary');
+                buttons[1].classList.replace('text-primary', 'text-text-muted');
+            } else {
+                indicator.style.transform = 'translateX(100%)';
+                buttons[1].classList.replace('text-text-muted', 'text-primary');
+                buttons[0].classList.replace('text-primary', 'text-text-muted');
+            }
+        }
+    </script>
+</body></html>
