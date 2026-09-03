@@ -57,12 +57,16 @@ try {
         // Auto re-send OTP code so user can verify immediately
         $otpResult = MailService::generateAndSendOtp($user['email'], $user['name']);
         
-        jsonError('Account not verified. Please enter the 6-digit OTP code sent to your email to activate your account.', 403, [
+        $errData = [
             'needs_verification' => true,
             'email' => $user['email'],
             'name' => $user['name'],
-            'debug_otp' => $otpResult['otp_code'] ?? null
-        ]);
+        ];
+        if (Env::get('APP_ENV') !== 'production' && Env::get('APP_DEBUG') === 'true') {
+            $errData['debug_otp'] = $otpResult['otp_code'] ?? null;
+        }
+
+        jsonError('Account not verified. Please enter the 6-digit OTP code sent to your email to activate your account.', 403, $errData);
     }
 
     // Generate auth token

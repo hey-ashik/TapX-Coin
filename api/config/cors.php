@@ -4,11 +4,36 @@
 require_once __DIR__ . '/env.php';
 
 function handleCors() {
-    $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '*';
-    header("Access-Control-Allow-Origin: $origin");
-    header("Access-Control-Allow-Credentials: true");
+    $origin = isset($_SERVER['HTTP_ORIGIN']) ? trim($_SERVER['HTTP_ORIGIN']) : '';
+    
+    // Whitelisted origins
+    $isAllowedOrigin = false;
+    if (!empty($origin)) {
+        $allowedHosts = [
+            'tapx.ashiik.com',
+            'www.tapx.ashiik.com',
+        ];
+        $parsed = parse_url($origin);
+        $host = $parsed['host'] ?? '';
+        
+        if (in_array($host, $allowedHosts, true) ||
+            $host === 'localhost' ||
+            $host === '127.0.0.1' ||
+            preg_match('/^192\.168\.\d+\.\d+$/', $host) ||
+            preg_match('/^10\.\d+\.\d+\.\d+$/', $host)) {
+            $isAllowedOrigin = true;
+        }
+    }
+
+    if ($isAllowedOrigin) {
+        header("Access-Control-Allow-Origin: $origin");
+        header("Access-Control-Allow-Credentials: true");
+    } else {
+        header("Access-Control-Allow-Origin: *");
+    }
+
     header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Session-Token");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Session-Token, X-Admin-Key");
 
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
         http_response_code(200);

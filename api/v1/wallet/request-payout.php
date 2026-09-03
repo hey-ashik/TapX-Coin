@@ -41,19 +41,41 @@ if (empty($destination)) {
 // 100,000 taps = $1.00 USD
 $tapsDeducted = $currency === 'bdt' ? (int)($amount * 1000) : (int)($amount * 100000);
 
-if ($tapsDeducted > (int)$user['score']) {
-    jsonError('Insufficient tap balance for this withdrawal request', 400);
+if ($tapsDeducted <= 0) {
+    jsonError('Invalid withdrawal conversion amount', 422);
 }
 
 $txId = 'TX-' . substr(strval(time()), -5) . strtoupper(bin2hex(random_bytes(2)));
 
-// Deduct score and insert transaction atomically
+// Deduct score and insert transaction atomically with pessimistic row locking
 $db->beginTransaction();
 
 try {
-    $deductStmt = $db->prepare("UPDATE users SET score = score - :taps, updated_at = NOW() WHERE id = :id");
+    // 1. Lock user row FOR UPDATE to prevent race conditions and concurrent double-spends
+    $lockStmt = $db->prepare("SELECT score FROM users WHERE id = :id FOR UPDATE");
+    $lockStmt->execute([':id' => $user['id']]);
+    $latestUser = $lockStmt->fetch();
+
+    $currentScore = (int)($latestUser['score'] ?? 0);
+    if ($currentScore < $tapsDeducted) {
+        $db->rollBack();
+        jsonError('Insufficient coin balance for this withdrawal request', 400);
+    }
+
+    // 2. Atomic deduction with constraint check
+    $deductStmt = $db->prepare("
+        UPDATE users 
+        SET score = score - :taps, updated_at = NOW() 
+        WHERE id = :id AND score >= :taps
+    ");
     $deductStmt->execute([':taps' => $tapsDeducted, ':id' => $user['id']]);
 
+    if ($deductStmt->rowCount() !== 1) {
+        $db->rollBack();
+        jsonError('Withdrawal processing error: balance conflict', 400);
+    }
+
+    // 3. Insert transaction
     $insertTx = $db->prepare("
         INSERT INTO transactions (id, user_id, amount, currency, taps_deducted, method, account_name, destination, status)
         VALUES (:id, :user_id, :amount, :currency, :taps, :method, :name, :destination, 'processing')
@@ -70,8 +92,10 @@ try {
     ]);
 
     $db->commit();
-} catch (Exception $e) {
-    $db->rollBack();
+} catch (Throwable $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
     jsonError('Failed to process withdrawal request: ' . $e->getMessage(), 500);
 }
 

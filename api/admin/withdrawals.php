@@ -273,6 +273,7 @@ $countRejected = (int)$db->query("SELECT COUNT(*) FROM transactions WHERE status
             try {
                 const res = await fetch('../v1/admin/confirm-payout.php', {
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         transaction_id: txId,
@@ -298,6 +299,7 @@ $countRejected = (int)$db->query("SELECT COUNT(*) FROM transactions WHERE status
             try {
                 const res = await fetch('../v1/admin/reject-payout.php', {
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         transaction_id: txId,

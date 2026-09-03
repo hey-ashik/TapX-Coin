@@ -19,21 +19,25 @@ if ($token) {
 
 // Handle Actions (Mark As Read / Delete)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'DELETE') {
+    if (!$userId) {
+        jsonError('Authorization token required', 401);
+    }
+
     $input = getJsonInput();
     $action = $input['action'] ?? ($_SERVER['REQUEST_METHOD'] === 'DELETE' ? 'delete' : 'mark_read');
     $notifId = isset($input['id']) ? (int)$input['id'] : null;
 
     if ($action === 'delete' && $notifId) {
-        $del = $db->prepare("DELETE FROM notifications WHERE id = :id AND (user_id = :uid OR user_id IS NULL)");
+        $del = $db->prepare("DELETE FROM notifications WHERE id = :id AND user_id = :uid");
         $del->execute([':id' => $notifId, ':uid' => $userId]);
         jsonSuccess(['deleted_id' => $notifId], 'Notification deleted successfully');
     }
 
     if ($notifId) {
-        $update = $db->prepare("UPDATE notifications SET is_read = 1 WHERE id = :id AND (user_id = :uid OR user_id IS NULL)");
+        $update = $db->prepare("UPDATE notifications SET is_read = 1 WHERE id = :id AND user_id = :uid");
         $update->execute([':id' => $notifId, ':uid' => $userId]);
-    } else if ($userId) {
-        $updateAll = $db->prepare("UPDATE notifications SET is_read = 1 WHERE user_id = :uid OR user_id IS NULL");
+    } else {
+        $updateAll = $db->prepare("UPDATE notifications SET is_read = 1 WHERE user_id = :uid");
         $updateAll->execute([':uid' => $userId]);
     }
 

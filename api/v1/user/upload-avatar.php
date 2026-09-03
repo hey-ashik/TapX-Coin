@@ -34,13 +34,25 @@ if ($file['size'] > $maxSize) {
     jsonError('Image size exceeds 5MB limit', 422);
 }
 
-$allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+$mimeMap = [
+    'image/jpeg' => 'jpg',
+    'image/png'  => 'png',
+    'image/webp' => 'webp',
+    'image/gif'  => 'gif',
+];
+
 $finfo = finfo_open(FILEINFO_MIME_TYPE);
 $mime = finfo_file($finfo, $file['tmp_name']);
 finfo_close($finfo);
 
-if (!in_array($mime, $allowedTypes)) {
+if (!isset($mimeMap[$mime])) {
     jsonError('Only JPG, PNG, WEBP, and GIF images are allowed', 422);
+}
+
+// Deep inspection: verify file contains valid image header dimensions
+$imgSize = @getimagesize($file['tmp_name']);
+if ($imgSize === false) {
+    jsonError('Invalid image data or corrupted image file', 422);
 }
 
 // Ensure uploads directory exists
@@ -49,17 +61,16 @@ if (!is_dir($uploadDir)) {
     @mkdir($uploadDir, 0755, true);
 }
 
-$extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-if (empty($extension)) {
-    $extension = 'png';
-}
-
-$filename = 'avatar_' . $user['id'] . '_' . time() . '.' . strtolower($extension);
+// Strictly derive safe extension from MIME type to prevent extension spoofing / webshell execution
+$extension = $mimeMap[$mime];
+$safeUserId = preg_replace('/[^a-zA-Z0-9_-]/', '', $user['id']);
+$filename = 'avatar_' . $safeUserId . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $extension;
 $targetPath = $uploadDir . '/' . $filename;
 
 if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
     jsonError('Failed to save uploaded file to storage', 500);
 }
+@chmod($targetPath, 0644);
 
 // Generate public URL
 $baseUrl = Env::get('API_BASE_URL', 'https://tapx.ashiik.com/api');

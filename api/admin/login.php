@@ -5,6 +5,14 @@ ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
 if (session_status() === PHP_SESSION_NONE) {
+    $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+    session_set_cookie_params([
+        'lifetime' => 86400 * 7,
+        'path' => '/',
+        'secure' => $isSecure,
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
     session_start();
 }
 
@@ -31,9 +39,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([':user' => $username, ':email' => $username]);
             $admin = $stmt->fetch();
 
-            // Default master check fallback: admin / TapX@Admin2026
+            $masterAdminPass = Env::get('ADMIN_PASS', 'TapX@Admin2026');
+
+            // Verify password against database hash or master pass
             if (($admin && password_verify($password, $admin['password_hash'])) || 
-                ($username === 'admin' && $password === 'TapX@Admin2026')) {
+                ($username === 'admin' && $password === $masterAdminPass)) {
+                session_regenerate_id(true);
                 $_SESSION['admin_logged_in'] = true;
                 $_SESSION['admin_username'] = $admin ? $admin['username'] : 'admin';
                 $_SESSION['admin_id'] = $admin ? $admin['id'] : 1;
@@ -43,8 +54,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'Invalid admin credentials. Please try again.';
             }
         } catch (Throwable $e) {
+            $masterAdminPass = Env::get('ADMIN_PASS', 'TapX@Admin2026');
             // Direct master password fallback if database is still provisioning
-            if ($username === 'admin' && $password === 'TapX@Admin2026') {
+            if ($username === 'admin' && $password === $masterAdminPass) {
+                session_regenerate_id(true);
                 $_SESSION['admin_logged_in'] = true;
                 $_SESSION['admin_username'] = 'admin';
                 $_SESSION['admin_id'] = 1;

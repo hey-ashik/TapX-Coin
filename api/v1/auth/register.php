@@ -81,12 +81,16 @@ if ($existingUser) {
 // Generate & Send 6-Digit OTP Code via Email
 $otpResult = MailService::generateAndSendOtp($email, $name);
 
-jsonSuccess([
-    'user_id' => $userId,
-    'email' => $email,
-    'name' => $name,
+$responseData = [
+    'user_id'    => $userId,
+    'email'      => $email,
+    'name'       => $name,
     'avatar_url' => $initialAvatar,
-    'otp_sent' => $otpResult['sent'],
-    'debug_otp' => $otpResult['otp_code'], // Included for instant testing
+    'otp_sent'   => $otpResult['sent'],
     'expires_at' => $otpResult['expires_at'],
-], 'Verification code sent to your email. Please check your inbox.');
+];
+if (Env::get('APP_ENV') !== 'production' && Env::get('APP_DEBUG') === 'true') {
+    $responseData['debug_otp'] = $otpResult['otp_code'];
+}
+
+jsonSuccess($responseData, 'Verification code sent to your email. Please check your inbox.');

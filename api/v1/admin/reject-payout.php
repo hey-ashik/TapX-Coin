@@ -3,6 +3,9 @@
 
 require_once dirname(__DIR__, 2) . '/config/cors.php';
 require_once dirname(__DIR__, 2) . '/config/database.php';
+require_once dirname(__DIR__, 2) . '/config/admin_auth.php';
+
+requireAdminApiAuth();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonError('Method not allowed', 405);

@@ -1,4 +1,16 @@
 # Prevent execution of any scripts in the uploads directory
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag engine off
+</IfModule>
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .cgi .pl .py .sh
+SetHandler default-handler
+
 <FilesMatch "\.(php|phtml|php3|php4|php5|php7|php8|phps|pl|py|cgi|sh|bash)$">
     <IfModule mod_authz_core.c>
         Require all denied

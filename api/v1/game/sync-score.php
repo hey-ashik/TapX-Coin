@@ -31,15 +31,30 @@ $todayTaps = isset($input['today_taps']) ? (int)$input['today_taps'] : null;
 $fields = [];
 $params = [':id' => $user['id']];
 
-if ($newScore !== null && $newScore >= (int)$user['score']) {
-    $fields[] = "`score` = :score";
-    $params[':score'] = $newScore;
+$currentScore = (int)$user['score'];
+
+if ($newScore !== null && $newScore >= $currentScore && $newScore >= 0) {
+    // Sanity check: prevent artificial trillion-coin injections
+    $delta = $newScore - $currentScore;
+    $maxDeltaAllowed = 250000; // max reasonable burst per sync cycle
+    if ($delta <= $maxDeltaAllowed) {
+        $fields[] = "`score` = :score";
+        $params[':score'] = $newScore;
+    } else {
+        // Cap excessive jump to prevent client-side memory editor tampering
+        $cappedScore = $currentScore + $maxDeltaAllowed;
+        $fields[] = "`score` = :score";
+        $params[':score'] = $cappedScore;
+        $newScore = $cappedScore;
+    }
 }
-if ($newLevel !== null) {
+
+if ($newLevel !== null && $newLevel >= 1 && $newLevel <= 100) {
     $fields[] = "`level` = :level";
     $params[':level'] = $newLevel;
 }
-if ($streakDays !== null) {
+
+if ($streakDays !== null && $streakDays >= 1 && $streakDays <= 365) {
     $fields[] = "`streak_days` = :streak";
     $params[':streak'] = $streakDays;
 }

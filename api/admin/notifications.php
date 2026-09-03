@@ -242,6 +242,7 @@ $notifications = $notifsStmt->fetchAll();
             try {
                 const res = await fetch('../v1/admin/broadcast-notification.php', {
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });

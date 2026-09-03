@@ -24,9 +24,13 @@ $user = $stmt->fetch();
 $name = $user ? $user['name'] : 'Tapper';
 $otpResult = MailService::generateAndSendOtp($email, $name);
 
-jsonSuccess([
+$resData = [
     'email' => $email,
     'otp_sent' => $otpResult['sent'],
-    'debug_otp' => $otpResult['otp_code'],
     'expires_at' => $otpResult['expires_at'],
-], 'A new 6-digit verification code has been dispatched to your email.');
+];
+if (Env::get('APP_ENV') !== 'production' && Env::get('APP_DEBUG') === 'true') {
+    $resData['debug_otp'] = $otpResult['otp_code'];
+}
+
+jsonSuccess($resData, 'A new 6-digit verification code has been dispatched to your email.');

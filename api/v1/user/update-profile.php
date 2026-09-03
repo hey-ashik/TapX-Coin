@@ -35,10 +35,18 @@ try {
     $params = [':id' => $user['id']];
 
     if ($name !== null && $name !== '') {
+        $name = strip_tags(trim($name));
+        if (mb_strlen($name) > 60) {
+            $name = mb_substr($name, 0, 60);
+        }
         $fields[] = "`name` = :name";
         $params[':name'] = $name;
     }
     if ($username !== null && $username !== '') {
+        $username = trim($username);
+        if (!preg_match('/^[a-zA-Z0-9_]{3,30}$/', $username)) {
+            jsonError('Username must be 3-30 characters (letters, numbers, underscores only)', 422);
+        }
         // Check uniqueness
         $check = $db->prepare("SELECT id FROM users WHERE username = :username AND id != :id LIMIT 1");
         $check->execute([':username' => $username, ':id' => $user['id']]);
@@ -49,19 +57,22 @@ try {
         $params[':username'] = $username;
     }
     if ($phone !== null) {
+        $phone = substr(preg_replace('/[^0-9+ -]/', '', $phone), 0, 25);
         $fields[] = "`phone` = :phone";
         $params[':phone'] = $phone;
     }
     if ($twitter !== null) {
+        $twitter = substr(preg_replace('/[^a-zA-Z0-9_@]/', '', $twitter), 0, 50);
         $fields[] = "`twitter_handle` = :twitter";
         $params[':twitter'] = $twitter;
     }
     if ($discord !== null) {
+        $discord = substr(strip_tags(trim($discord)), 0, 50);
         $fields[] = "`discord_username` = :discord";
         $params[':discord'] = $discord;
     }
     if ($avatarUrl !== null && $avatarUrl !== '') {
-        // If it is a base64 Data URL, save as a physical image file
+        // If it is a base64 Data URL, validate image content and save as physical file
         if (strpos($avatarUrl, 'data:image/') === 0) {
             $uploadDir = dirname(__DIR__, 2) . '/uploads/avatars/';
             if (!is_dir($uploadDir)) {
@@ -69,28 +80,35 @@ try {
             }
             
             $parts = explode(',', $avatarUrl);
-            $header = $parts[0] ?? '';
             $base64Data = $parts[1] ?? '';
+            $decoded = base64_decode($base64Data, true);
             
-            $ext = 'png';
-            if (strpos($header, 'image/jpeg') !== false || strpos($header, 'image/jpg') !== false) {
-                $ext = 'jpg';
-            } else if (strpos($header, 'image/webp') !== false) {
-                $ext = 'webp';
+            if ($decoded !== false && strlen($decoded) <= 5 * 1024 * 1024) {
+                $imgInfo = @getimagesizefromstring($decoded);
+                $allowedMimes = [
+                    'image/jpeg' => 'jpg',
+                    'image/png'  => 'png',
+                    'image/webp' => 'webp',
+                    'image/gif'  => 'gif',
+                ];
+                if ($imgInfo !== false && isset($allowedMimes[$imgInfo['mime']])) {
+                    $ext = $allowedMimes[$imgInfo['mime']];
+                    $filename = 'avatar_' . substr(md5($user['id']), 0, 10) . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                    $filePath = $uploadDir . $filename;
+                    if (file_put_contents($filePath, $decoded)) {
+                        @chmod($filePath, 0644);
+                        $baseUrl = Env::get('API_BASE_URL', 'https://tapx.ashiik.com/api');
+                        $avatarUrl = rtrim($baseUrl, '/') . '/uploads/avatars/' . $filename;
+                        $fields[] = "`avatar_url` = :avatar";
+                        $params[':avatar'] = $avatarUrl;
+                    }
+                }
             }
-            
-            $filename = 'avatar_' . substr(md5($user['id']), 0, 10) . '_' . time() . '.' . $ext;
-            $filePath = $uploadDir . $filename;
-            
-            $decoded = base64_decode($base64Data);
-            if ($decoded !== false && file_put_contents($filePath, $decoded)) {
-                $baseUrl = Env::get('API_BASE_URL', 'https://tapx.ashiik.com/api');
-                $avatarUrl = rtrim($baseUrl, '/') . '/uploads/avatars/' . $filename;
-            }
+        } elseif (preg_match('/^https?:\/\//i', $avatarUrl)) {
+            // Valid external URL
+            $fields[] = "`avatar_url` = :avatar";
+            $params[':avatar'] = filter_var($avatarUrl, FILTER_SANITIZE_URL);
         }
-
-        $fields[] = "`avatar_url` = :avatar";
-        $params[':avatar'] = $avatarUrl;
     }
 
     if (empty($fields)) {

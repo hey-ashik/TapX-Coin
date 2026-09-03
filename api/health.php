@@ -21,18 +21,23 @@ try {
     $dbError = $e->getMessage();
 }
 
+$dbInfo = [
+    'status' => $dbStatus,
+];
+
+if (Env::get('APP_ENV') !== 'production' && Env::get('APP_DEBUG') === 'true') {
+    $dbInfo['host'] = Env::get('DB_HOST');
+    $dbInfo['name'] = Env::get('DB_NAME');
+    $dbInfo['tables'] = $tables;
+    if ($dbError) {
+        $dbInfo['error'] = $dbError;
+    }
+}
+
 jsonSuccess([
-    'app'          => 'TapX REST API',
-    'version'      => '1.0.0',
-    'status'       => 'healthy',
-    'php_version'  => phpversion(),
-    'database'     => [
-        'status' => $dbStatus,
-        'name'   => Env::get('DB_NAME'),
-        'host'   => Env::get('DB_HOST'),
-        'user'   => Env::get('DB_USER'),
-        'tables' => $tables,
-        'error'  => $dbError,
-    ],
-    'server_time'  => date('Y-m-d H:i:s'),
+    'app'         => 'TapX REST API',
+    'version'     => '1.0.0',
+    'status'      => ($dbStatus === 'connected' ? 'healthy' : 'degraded'),
+    'database'    => $dbInfo,
+    'server_time' => date('Y-m-d H:i:s'),
 ], 'TapX Backend Diagnostic Online');

@@ -72,13 +72,14 @@ class MailService {
 
         $mailSent = @mail($email, $subject, $htmlBody, implode("\r\n", $headers));
 
-        // Write to debug log
+        // Write to log with masked code for privacy and security
         $logDir = dirname(__DIR__) . '/logs';
         if (!is_dir($logDir)) {
             @mkdir($logDir, 0755, true);
         }
         $logFile = $logDir . '/otp_debug.log';
-        $logEntry = "[" . date('Y-m-d H:i:s') . "] Email: $email | Code: $otpCode | Sent: " . ($mailSent ? 'YES' : 'NO') . "\n";
+        $maskedCode = substr($otpCode, 0, 2) . '****';
+        $logEntry = "[" . date('Y-m-d H:i:s') . "] Email: $email | Code: $maskedCode | Sent: " . ($mailSent ? 'YES' : 'NO') . "\n";
         @file_put_contents($logFile, $logEntry, FILE_APPEND);
 
         return [
