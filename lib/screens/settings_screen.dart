@@ -6,6 +6,7 @@ import '../providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/api_service.dart';
 import '../services/haptic_service.dart';
+import '../services/notification_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_avatar.dart';
 import '../widgets/app_pull_to_refresh.dart';
@@ -510,6 +511,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         settings.toggleNotifications(val);
                       },
                     ),
+                    if (settings.notificationsEnabled) ...[
+                      const SizedBox(height: 10),
+                      InkWell(
+                        onTap: () async {
+                          HapticService.lightImpact();
+                          await NotificationService.showTestNotification();
+                          if (context.mounted) {
+                            AppToast.show(context, message: 'Test alert sent! Check your phone notification bar.');
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceSubtle,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.borderSubtle),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.notifications_active_outlined, size: 18, color: AppColors.primary),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    'Test Phone Notification',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Icon(Icons.chevron_right, size: 16, color: AppColors.textMuted),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),

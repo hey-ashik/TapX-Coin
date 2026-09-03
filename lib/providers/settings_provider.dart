@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/haptic_service.dart';
+import '../services/notification_service.dart';
 
 class SettingsProvider extends ChangeNotifier {
   static const String _keyHaptics = 'tapx_setting_haptics';
   static const String _keySound = 'tapx_setting_sound';
   static const String _keyLowPower = 'tapx_setting_low_power';
+  static const String _keyNotifications = 'tapx_setting_notifications';
 
   bool _hapticsEnabled = true;
   bool _soundEnabled = true;
@@ -27,6 +29,7 @@ class SettingsProvider extends ChangeNotifier {
       _hapticsEnabled = prefs.getBool(_keyHaptics) ?? true;
       _soundEnabled = prefs.getBool(_keySound) ?? true;
       _lowPowerMode = prefs.getBool(_keyLowPower) ?? false;
+      _notificationsEnabled = prefs.getBool(_keyNotifications) ?? true;
       HapticService.setEnabled(_hapticsEnabled);
       notifyListeners();
     } catch (_) {}
@@ -63,8 +66,18 @@ class SettingsProvider extends ChangeNotifier {
     } catch (_) {}
   }
 
-  void toggleNotifications(bool value) {
+  void toggleNotifications(bool value) async {
     _notificationsEnabled = value;
     notifyListeners();
+    if (value) {
+      await NotificationService.requestPermission();
+      NotificationService.startPeriodicSync();
+    } else {
+      NotificationService.stopPeriodicSync();
+    }
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_keyNotifications, value);
+    } catch (_) {}
   }
 }

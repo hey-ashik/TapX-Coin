@@ -10,12 +10,14 @@ import 'screens/auth_screen.dart';
 import 'screens/main_scaffold_screen.dart';
 import 'services/api_service.dart';
 import 'services/haptic_service.dart';
+import 'services/notification_service.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ApiService.init();
   await HapticService.init();
+  await NotificationService.init();
 
   final authProvider = AuthProvider();
   await authProvider.restoreSession();
@@ -100,6 +102,7 @@ class TapXApp extends StatelessWidget {
       child: Consumer<AuthProvider>(
         builder: (context, authState, _) {
           return MaterialApp(
+            navigatorKey: NotificationService.navigatorKey,
             title: 'TapX - Coin',
             debugShowCheckedModeBanner: false,
             themeMode: ThemeMode.dark,

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/tap_engine_provider.dart';
 import '../services/haptic_service.dart';
+import '../services/notification_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_avatar.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
@@ -40,6 +41,8 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = context.read<AuthProvider>().currentUser;
       context.read<TapEngineProvider>().syncWithUser(user.totalTaps, user.level);
+      NotificationService.requestPermission();
+      NotificationService.checkForNewAnnouncements();
     });
   }
 

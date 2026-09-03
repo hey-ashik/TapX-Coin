@@ -5,6 +5,7 @@ import '../models/notification_model.dart';
 import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
 import '../services/haptic_service.dart';
+import '../services/notification_service.dart';
 import '../theme/app_colors.dart';
 import 'app_skeleton.dart';
 import 'app_toast.dart';
@@ -48,6 +49,7 @@ class _NotificationModalState extends State<NotificationModal> {
         _notifications = list;
         _isLoading = false;
       });
+      NotificationService.checkForNewAnnouncements();
     } else {
       setState(() => _isLoading = false);
     }
