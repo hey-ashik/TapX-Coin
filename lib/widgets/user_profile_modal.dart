@@ -8,6 +8,7 @@ import '../providers/tap_engine_provider.dart';
 import '../providers/wallet_provider.dart';
 import '../services/haptic_service.dart';
 import '../theme/app_colors.dart';
+import '../utils/time_utils.dart';
 import 'activity_bar_chart.dart';
 import 'app_avatar.dart';
 
@@ -188,7 +189,7 @@ class _UserProfileModalState extends State<UserProfileModal> {
         : (isCurrentPlayer ? tapEngine.level : (entry?.level ?? user?.level ?? 1));
     final streakDays = (entry?.isRewardEntry == true)
         ? entry!.streakDays
-        : (isCurrentPlayer ? tapEngine.dailyBonusDay : (entry?.streakDays ?? user?.streakDays ?? 1));
+        : (isCurrentPlayer ? tapEngine.activeStreakDays : (entry?.streakDays ?? user?.streakDays ?? 1));
     final joinedDate = entry?.joinedDate ?? user?.joinedDate ?? '2026';
     final activityRates = isCurrentPlayer 
         ? tapEngine.weeklyActivityRates 
@@ -487,17 +488,47 @@ class _UserProfileModalState extends State<UserProfileModal> {
     required List<int> weeklyTaps,
   }) {
     final String rewardCurrency = entry?.rewardCurrency ?? (isCurrentPlayer ? walletCurrencySymbol : '৳');
+    
+    // TOTAL REWARD: Strictly shows money received from completed/approved withdrawals (in BDT ৳)
+    double totalWithdrawnMoney = 0.0;
+    if (isCurrentPlayer) {
+      for (final tx in walletTransactions) {
+        final statusStr = tx.status.toString().toLowerCase();
+        if (statusStr.contains('completed') || statusStr.contains('approved') || statusStr.contains('paid')) {
+          totalWithdrawnMoney += (tx.amount as num).toDouble();
+        }
+      }
+    }
+
     final double rewardVal = (entry?.rewardAmount != null)
         ? entry!.rewardAmount!
-        : (isCurrentPlayer ? walletBalance : (score / 1000.0));
+        : (isCurrentPlayer ? totalWithdrawnMoney : 0.0);
 
-    final bool hasPayout = entry?.rewardMethod != null ||
-        (isCurrentPlayer && walletTransactions.isNotEmpty);
-    final String payoutText = entry?.rewardMethod != null
-        ? 'Paid (${entry!.rewardMethod})'
-        : (isCurrentPlayer && walletTransactions.isNotEmpty
-            ? walletTransactions.first.status.toString().toUpperCase()
-            : 'Day $streakDays');
+    // PAYOUT STATUS: Shows payment method from last payout (e.g. "bKash (Paid)" or "Nagad")
+    String? latestMethod;
+    bool isLatestPaid = false;
+
+    if (entry?.rewardMethod != null && entry!.rewardMethod!.isNotEmpty) {
+      latestMethod = entry.rewardMethod;
+      isLatestPaid = true;
+    } else if (isCurrentPlayer && walletTransactions.isNotEmpty) {
+      final tx = walletTransactions.first;
+      final method = tx.method.toString().trim();
+      final statusStr = tx.status.toString().toLowerCase();
+      isLatestPaid = statusStr.contains('completed') || statusStr.contains('paid') || statusStr.contains('approved');
+      final isProcessing = statusStr.contains('processing') || statusStr.contains('pending');
+
+      if (isLatestPaid) {
+        latestMethod = '$method (Paid)';
+      } else if (isProcessing) {
+        latestMethod = '$method (Pending)';
+      } else {
+        latestMethod = method;
+      }
+    }
+
+    final bool hasPayout = latestMethod != null && latestMethod.isNotEmpty;
+    final String payoutText = hasPayout ? latestMethod : 'Day $streakDays';
 
     return Column(
       key: key,
@@ -572,7 +603,7 @@ class _UserProfileModalState extends State<UserProfileModal> {
                             payoutText,
                             style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                                   letterSpacing: -0.5,
-                                  fontSize: hasPayout ? 16 : 20,
+                                  fontSize: hasPayout ? 15 : 20,
                                   color: hasPayout ? const Color(0xFF22C55E) : null,
                                 ),
                             overflow: TextOverflow.ellipsis,
@@ -615,8 +646,7 @@ class _UserProfileModalState extends State<UserProfileModal> {
   static List<double> _getAccurateWeeklyRewardAmounts(double amount) {
     final list = List<double>.filled(7, 0.0);
     if (amount <= 0) return list;
-    final now = DateTime.now();
-    final todayIdx = (now.weekday - 1).clamp(0, 6);
+    final todayIdx = TimeUtils.currentWeekdayIndex();
     list[todayIdx] = amount;
     return list;
   }
@@ -624,9 +654,8 @@ class _UserProfileModalState extends State<UserProfileModal> {
   static List<int> _getAccurateWeeklyCounts(int score) {
     final list = List<int>.filled(7, 0);
     if (score <= 0) return list;
-    final now = DateTime.now();
-    final todayIdx = (now.weekday - 1).clamp(0, 6);
-    list[todayIdx] = score;
+    final todayIdx = TimeUtils.currentWeekdayIndex();
+    list[todayIdx] = (score / 7).round();
     return list;
   }
 }

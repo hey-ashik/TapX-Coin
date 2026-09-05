@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/floating_particle.dart';
 import '../services/api_service.dart';
 import '../services/haptic_service.dart';
+import '../utils/time_utils.dart';
 
 class TapEngineProvider extends ChangeNotifier {
   static const String _keyScore = 'tapx_engine_score';
@@ -16,6 +17,9 @@ class TapEngineProvider extends ChangeNotifier {
   static const String _keyLastDate = 'tapx_engine_last_date';
   static const String _keyLastClaimDate = 'tapx_engine_last_claim_date';
   static const String _keyWeeklyTaps = 'tapx_engine_weekly_taps';
+  static const String _keyDailyTapsMap = 'tapx_engine_daily_taps_map';
+  static const String _keyLastActiveBdDate = 'tapx_engine_last_active_bd_date';
+  static const String _keyActiveStreakDays = 'tapx_engine_active_streak_days';
 
   // Initial starting state: 0 score, Level 1
   int _score = 0;
@@ -23,12 +27,11 @@ class TapEngineProvider extends ChangeNotifier {
   int _nextLevelScore = 100;
   int _currentMilestoneBase = 0;
 
-  // Live Today Taps tracking: counts taps in current 24h cycle, auto-resets at midnight
-  int _todayTaps = 0;
-  DateTime _lastDayCheck = DateTime.now();
-
-  // 7-day weekday tap counts: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-  List<int> _weeklyTaps = [0, 0, 0, 0, 0, 0, 0];
+  // Active Daily Taps dictionary by Bangladesh date ('YYYY-MM-DD' -> count)
+  Map<String, int> _dailyTapsByDate = {};
+  String? _lastDayCheckStr;
+  String? _lastActiveBdDate;
+  int _activeStreakDays = 1;
 
   // Energy Charge System: Starts at 0, charges up to 500 on continuous taps
   final int _maxEnergy = 500;
@@ -54,7 +57,7 @@ class TapEngineProvider extends ChangeNotifier {
   void Function(int totalTaps)? onScoreChanged;
 
   int get score => _score;
-  int get todayTaps => _todayTaps;
+  int get todayTaps => _dailyTapsByDate[TimeUtils.bdDateString()] ?? 0;
   int get level => _level;
   int get nextLevelScore => _nextLevelScore;
   int get currentMilestoneBase => _currentMilestoneBase;
@@ -64,34 +67,32 @@ class TapEngineProvider extends ChangeNotifier {
   double get multiplier => _multiplier;
   int get comboCount => _comboCount;
   int get dailyBonusDay => _dailyBonusDay;
+  int get streakDays => _activeStreakDays;
+  int get activeStreakDays => _activeStreakDays;
   bool get isDailyBonusClaimed => _isDailyBonusClaimed;
   int get nextStreakDay => (_dailyBonusDay >= 7) ? 1 : (_dailyBonusDay + 1);
   int get nextDayBonusAmount => getBonusAmountForDay(nextStreakDay);
-  List<int> get weeklyTaps => List.unmodifiable(_weeklyTaps);
 
-  String get timeUntilReset {
-    final now = DateTime.now();
-    final midnight = DateTime(now.year, now.month, now.day + 1);
-    final diff = midnight.difference(now);
-    final hours = diff.inHours;
-    final minutes = diff.inMinutes % 60;
-    if (hours > 0) {
-      return '${hours}h ${minutes}m';
-    } else {
-      return '${minutes}m';
-    }
+  // 7-day weekday tap counts: [Mon, Tue, Wed, Thu, Fri, Sat, Sun] for Bangladesh current week
+  List<int> get weeklyTaps {
+    final currentWeekDates = TimeUtils.currentWeekBdDates();
+    return currentWeekDates.map((dateStr) => _dailyTapsByDate[dateStr] ?? 0).toList();
   }
+
+  // Friendly time remaining until 12:00 AM (midnight) Bangladesh Time
+  String get timeUntilReset => TimeUtils.timeUntilBdMidnight();
 
   // Calculate real activity rates (0.0 to 1.0) based on actual weekly taps
   List<double> get weeklyActivityRates {
+    final taps = weeklyTaps;
     int maxDayTaps = 0;
-    for (final count in _weeklyTaps) {
+    for (final count in taps) {
       if (count > maxDayTaps) maxDayTaps = count;
     }
     if (maxDayTaps <= 0) {
       return const [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
     }
-    return _weeklyTaps.map((c) => (c / maxDayTaps).clamp(0.0, 1.0)).toList();
+    return taps.map((c) => (c / maxDayTaps).clamp(0.0, 1.0)).toList();
   }
 
   TapEngineProvider() {
@@ -100,49 +101,67 @@ class TapEngineProvider extends ChangeNotifier {
     _startPeriodicDBSync();
   }
 
-  static int _calendarDaysBetween(DateTime from, DateTime to) {
-    final fromDate = DateTime(from.year, from.month, from.day);
-    final toDate = DateTime(to.year, to.month, to.day);
-    return toDate.difference(fromDate).inDays;
+  /// Increments or resets active streak based on 24-hour calendar days in Bangladesh
+  void _updateActiveStreakOnActivity() {
+    final todayStr = TimeUtils.bdDateString();
+    if (_lastActiveBdDate == null) {
+      _lastActiveBdDate = todayStr;
+      if (_activeStreakDays < 1) _activeStreakDays = 1;
+    } else if (_lastActiveBdDate != todayStr) {
+      final lastDate = DateTime.tryParse(_lastActiveBdDate!);
+      final todayDate = DateTime.tryParse(todayStr);
+      if (lastDate != null && todayDate != null) {
+        final daysDiff = TimeUtils.calendarDaysBetween(lastDate, todayDate);
+        if (daysDiff == 1) {
+          // Consecutive calendar day in Bangladesh time!
+          _activeStreakDays++;
+        } else if (daysDiff > 1) {
+          // Missed one or more days -> reset streak back to 1
+          _activeStreakDays = 1;
+        }
+      } else {
+        _activeStreakDays = 1;
+      }
+      _lastActiveBdDate = todayStr;
+    }
+    _persistState();
   }
 
   Future<void> restoreState() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       _score = prefs.getInt(_keyScore) ?? _score;
-      _todayTaps = prefs.getInt(_keyTodayTaps) ?? _todayTaps;
       _level = prefs.getInt(_keyLevel) ?? _level;
       _nextLevelScore = prefs.getInt(_keyNextLevel) ?? _nextLevelScore;
       _dailyBonusDay = (prefs.getInt(_keyBonusDay) ?? _dailyBonusDay).clamp(1, 7);
       _isDailyBonusClaimed = prefs.getBool(_keyBonusClaimed) ?? _isDailyBonusClaimed;
-
-      final lastDateStr = prefs.getString(_keyLastDate);
-      if (lastDateStr != null) {
-        _lastDayCheck = DateTime.tryParse(lastDateStr) ?? DateTime.now();
-      }
+      _activeStreakDays = prefs.getInt(_keyActiveStreakDays) ?? _activeStreakDays;
+      _lastActiveBdDate = prefs.getString(_keyLastActiveBdDate);
+      _lastDayCheckStr = prefs.getString(_keyLastDate) ?? TimeUtils.bdDateString();
 
       final lastClaimDateStr = prefs.getString(_keyLastClaimDate);
       if (lastClaimDateStr != null) {
         _lastBonusClaimDate = DateTime.tryParse(lastClaimDateStr);
       }
 
-      final weeklyJson = prefs.getString(_keyWeeklyTaps);
-      if (weeklyJson != null) {
-        final decoded = jsonDecode(weeklyJson);
-        if (decoded is List) {
-          _weeklyTaps = List<int>.from(decoded.map((x) => (x as num).toInt()));
+      // Restore daily taps mapping
+      final dailyMapJson = prefs.getString(_keyDailyTapsMap);
+      if (dailyMapJson != null) {
+        final decoded = jsonDecode(dailyMapJson);
+        if (decoded is Map) {
+          _dailyTapsByDate = decoded.map((k, v) => MapEntry(k.toString(), (v as num).toInt()));
         }
       }
 
-      // Check date validity against now
-      final now = DateTime.now();
+      // Check date validity against Bangladesh Time
+      final nowBd = TimeUtils.bdNow();
       if (_lastBonusClaimDate != null) {
-        final daysDiff = _calendarDaysBetween(_lastBonusClaimDate!, now);
+        final daysDiff = TimeUtils.calendarDaysBetween(_lastBonusClaimDate!, nowBd);
         if (daysDiff == 0) {
           _isDailyBonusClaimed = true; // Claimed today
         } else if (daysDiff == 1) {
           if (_isDailyBonusClaimed) {
-            // Consecutive next day -> advance streak
+            // Consecutive next day -> advance streak bonus day
             if (_dailyBonusDay >= 7) {
               _dailyBonusDay = 1;
             } else {
@@ -151,19 +170,15 @@ class TapEngineProvider extends ChangeNotifier {
             _isDailyBonusClaimed = false;
           }
         } else if (daysDiff > 1) {
-          // Missed one or more days -> reset streak back to Day 1
+          // Missed one or more days -> reset daily bonus streak back to Day 1
           _dailyBonusDay = 1;
           _isDailyBonusClaimed = false;
         }
       }
 
-      // Ensure current day bucket matches score if initial
-      final weekdayIndex = (now.weekday - 1).clamp(0, 6);
-      if (_weeklyTaps[weekdayIndex] < _todayTaps) {
-        _weeklyTaps[weekdayIndex] = _todayTaps;
-      }
-
+      _updateActiveStreakOnActivity();
       _checkMidnightReset();
+      if (_isDisposed) return;
       onScoreChanged?.call(_score);
       notifyListeners();
     } catch (e) {
@@ -175,23 +190,30 @@ class TapEngineProvider extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_keyScore, _score);
-      await prefs.setInt(_keyTodayTaps, _todayTaps);
+      await prefs.setInt(_keyTodayTaps, todayTaps);
       await prefs.setInt(_keyLevel, _level);
       await prefs.setInt(_keyNextLevel, _nextLevelScore);
       await prefs.setInt(_keyBonusDay, _dailyBonusDay);
       await prefs.setBool(_keyBonusClaimed, _isDailyBonusClaimed);
-      await prefs.setString(_keyLastDate, _lastDayCheck.toIso8601String());
+      await prefs.setInt(_keyActiveStreakDays, _activeStreakDays);
+      if (_lastActiveBdDate != null) {
+        await prefs.setString(_keyLastActiveBdDate, _lastActiveBdDate!);
+      }
+      if (_lastDayCheckStr != null) {
+        await prefs.setString(_keyLastDate, _lastDayCheckStr!);
+      }
       if (_lastBonusClaimDate != null) {
         await prefs.setString(_keyLastClaimDate, _lastBonusClaimDate!.toIso8601String());
       }
-      await prefs.setString(_keyWeeklyTaps, jsonEncode(_weeklyTaps));
+      await prefs.setString(_keyWeeklyTaps, jsonEncode(weeklyTaps));
+      await prefs.setString(_keyDailyTapsMap, jsonEncode(_dailyTapsByDate));
     } catch (e) {
       debugPrint('TapEngine persist note: $e');
     }
   }
 
   void _startMidnightChecker() {
-    _midnightCheckTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+    _midnightCheckTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       _checkMidnightReset();
     });
   }
@@ -203,23 +225,22 @@ class TapEngineProvider extends ChangeNotifier {
         ApiService.syncScore(
           score: _score,
           level: _level,
-          streakDays: _dailyBonusDay,
+          streakDays: _activeStreakDays,
         );
       }
     });
   }
 
   void _checkMidnightReset() {
-    final now = DateTime.now();
-    final lastDate = DateTime(_lastDayCheck.year, _lastDayCheck.month, _lastDayCheck.day);
-    final nowDate = DateTime(now.year, now.month, now.day);
+    final nowBd = TimeUtils.bdNow();
+    final todayStr = TimeUtils.bdDateString(nowBd);
 
-    if (nowDate.isAfter(lastDate)) {
-      _todayTaps = 0;
-      _lastDayCheck = now;
+    if (_lastDayCheckStr != null && _lastDayCheckStr != todayStr) {
+      // 12:00 AM (midnight) in Bangladesh has passed!
+      _lastDayCheckStr = todayStr;
 
       if (_lastBonusClaimDate != null) {
-        final daysDiff = _calendarDaysBetween(_lastBonusClaimDate!, now);
+        final daysDiff = TimeUtils.calendarDaysBetween(_lastBonusClaimDate!, nowBd);
         if (daysDiff == 1 && _isDailyBonusClaimed) {
           // Advanced to consecutive next day
           if (_dailyBonusDay >= 7) {
@@ -275,6 +296,7 @@ class TapEngineProvider extends ChangeNotifier {
 
   void handleTap(Offset localPosition, {bool hapticsEnabled = true}) {
     _checkMidnightReset();
+    _updateActiveStreakOnActivity();
     _decayTimer?.cancel();
     _comboResetTimer?.cancel();
 
@@ -301,13 +323,8 @@ class TapEngineProvider extends ChangeNotifier {
     }
 
     _score += basePoints;
-    _todayTaps += basePoints;
-
-    // Record in current weekday bucket (Monday = 1 -> index 0)
-    final weekdayIndex = (now.weekday - 1).clamp(0, 6);
-    if (_weeklyTaps.length == 7) {
-      _weeklyTaps[weekdayIndex] = (_weeklyTaps[weekdayIndex] + basePoints).clamp(0, _score);
-    }
+    final todayStr = TimeUtils.bdDateString();
+    _dailyTapsByDate[todayStr] = (_dailyTapsByDate[todayStr] ?? 0) + basePoints;
 
     // Notify wallet provider with earned points
     onTapsEarned?.call(basePoints);
@@ -360,7 +377,7 @@ class TapEngineProvider extends ChangeNotifier {
         ApiService.syncScore(
           score: _score,
           level: _level,
-          streakDays: _dailyBonusDay,
+          streakDays: _activeStreakDays,
         );
       }
     });
@@ -391,18 +408,15 @@ class TapEngineProvider extends ChangeNotifier {
 
   bool claimDailyBonus() {
     _checkMidnightReset();
+    _updateActiveStreakOnActivity();
     if (_isDailyBonusClaimed) return false;
 
     final reward = currentDayBonusAmount;
     _score += reward;
-    _todayTaps += reward;
-    final now = DateTime.now();
-    final weekdayIndex = (now.weekday - 1).clamp(0, 6);
-    if (_weeklyTaps.length == 7) {
-      _weeklyTaps[weekdayIndex] = (_weeklyTaps[weekdayIndex] + reward).clamp(0, _score);
-    }
+    final todayStr = TimeUtils.bdDateString();
+    _dailyTapsByDate[todayStr] = (_dailyTapsByDate[todayStr] ?? 0) + reward;
     _isDailyBonusClaimed = true;
-    _lastBonusClaimDate = now;
+    _lastBonusClaimDate = TimeUtils.bdNow();
 
     onTapsEarned?.call(reward);
     onScoreChanged?.call(_score);
@@ -414,7 +428,6 @@ class TapEngineProvider extends ChangeNotifier {
 
   void resetForGuest() {
     _score = 0;
-    _todayTaps = 0;
     _level = 1;
     _nextLevelScore = 100;
     _currentMilestoneBase = 0;
@@ -422,9 +435,10 @@ class TapEngineProvider extends ChangeNotifier {
     _multiplier = 1.0;
     _comboCount = 0;
     _dailyBonusDay = 1;
+    _activeStreakDays = 1;
     _isDailyBonusClaimed = false;
     _lastBonusClaimDate = null;
-    _weeklyTaps = [0, 0, 0, 0, 0, 0, 0];
+    _dailyTapsByDate.clear();
     _particles.clear();
     _persistState();
     notifyListeners();
@@ -435,28 +449,20 @@ class TapEngineProvider extends ChangeNotifier {
       _score = userScore;
     }
     _level = userLevel > 0 ? userLevel : _level;
-    if (userStreakDays != null && userStreakDays >= 1 && userStreakDays <= 7 && _lastBonusClaimDate == null) {
-      _dailyBonusDay = userStreakDays;
+    if (userStreakDays != null && userStreakDays >= 1) {
+      if (_activeStreakDays < userStreakDays) {
+        _activeStreakDays = userStreakDays;
+      }
+      if (_lastBonusClaimDate == null) {
+        _dailyBonusDay = userStreakDays.clamp(1, 7);
+      }
     }
-    _todayTaps = _todayTaps > 0 ? _todayTaps.clamp(0, _score) : _score;
+    _updateActiveStreakOnActivity();
     _currentEnergy = 0;
     _multiplier = 1.0;
     _comboCount = 0;
     _nextLevelScore = (_score > 0) ? (_score * 1.6).toInt() + 100 : 100;
     _currentMilestoneBase = (_nextLevelScore * 0.4).toInt();
-    final now = DateTime.now();
-    final weekdayIndex = (now.weekday - 1).clamp(0, 6);
-    if (_weeklyTaps.length == 7) {
-      _weeklyTaps[weekdayIndex] = _todayTaps;
-      for (int i = 0; i < 7; i++) {
-        if (_weeklyTaps[i] > _score) {
-          _weeklyTaps[i] = _score;
-        }
-      }
-    } else {
-      _weeklyTaps = [0, 0, 0, 0, 0, 0, 0];
-      _weeklyTaps[weekdayIndex] = _todayTaps;
-    }
     _persistState();
     notifyListeners();
   }
@@ -473,8 +479,11 @@ class TapEngineProvider extends ChangeNotifier {
     loadForUser(score, level, userStreakDays);
   }
 
+  bool _isDisposed = false;
+
   @override
   void dispose() {
+    _isDisposed = true;
     _decayTimer?.cancel();
     _comboResetTimer?.cancel();
     _backendSyncTimer?.cancel();

@@ -3,6 +3,9 @@
 
 require_once __DIR__ . '/env.php';
 
+// Align PHP timezone to Bangladesh Standard Time (UTC+6)
+date_default_timezone_set('Asia/Dhaka');
+
 class Database {
     private static $pdo = null;
 
@@ -26,6 +29,8 @@ class Database {
 
         try {
             self::$pdo = new PDO($dsn, $user, $pass, $options);
+            // Ensure MySQL session operates in Bangladesh Timezone (+06:00)
+            self::$pdo->exec("SET time_zone = '+06:00'");
             self::ensureTablesExist();
             return self::$pdo;
         } catch (PDOException $e) {

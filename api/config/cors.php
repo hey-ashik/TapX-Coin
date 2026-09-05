@@ -3,6 +3,9 @@
 
 require_once __DIR__ . '/env.php';
 
+// Ensure all PHP date & time functions strictly use Bangladesh Standard Time (UTC+6)
+date_default_timezone_set('Asia/Dhaka');
+
 function handleCors() {
     $origin = isset($_SERVER['HTTP_ORIGIN']) ? trim($_SERVER['HTTP_ORIGIN']) : '';
     

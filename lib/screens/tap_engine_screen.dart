@@ -317,7 +317,7 @@ class _TapEngineScreenState extends State<TapEngineScreen> with SingleTickerProv
                                 ),
                               ),
                               Text(
-                                'Resets in ${tapEngine.timeUntilReset} at 12:00 AM',
+                                'Resets in ${tapEngine.timeUntilReset}',
                                 style: const TextStyle(
                                   fontSize: 11,
                                   color: AppColors.textMuted,

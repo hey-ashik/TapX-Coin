@@ -396,12 +396,21 @@ class LeaderboardProvider extends ChangeNotifier {
     if (!silent) {
       _isLoading = false;
     }
-    notifyListeners();
+    _safeNotifyListeners();
   }
+
+  bool _isDisposed = false;
 
   @override
   void dispose() {
+    _isDisposed = true;
     _autoRefreshTimer?.cancel();
     super.dispose();
+  }
+
+  void _safeNotifyListeners() {
+    if (!_isDisposed) {
+      notifyListeners();
+    }
   }
 }
