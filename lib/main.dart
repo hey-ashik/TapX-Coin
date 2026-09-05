@@ -73,7 +73,9 @@ class TapXApp extends StatelessWidget {
 
             if (a.isAuthenticated) {
               engine.loadForUser(a.currentUser.totalTaps, a.currentUser.level, a.currentUser.streakDays);
-              wallet.loadForUser(a.currentUser.totalTaps);
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                wallet.loadForUser(a.currentUser.totalTaps);
+              });
             }
             return engine;
           },

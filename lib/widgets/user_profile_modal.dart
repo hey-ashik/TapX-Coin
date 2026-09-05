@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/leaderboard_entry.dart';
 import '../models/user_model.dart';
 import '../providers/auth_provider.dart';
+import '../providers/leaderboard_provider.dart';
 import '../providers/tap_engine_provider.dart';
 import '../providers/wallet_provider.dart';
 import '../services/haptic_service.dart';
@@ -166,34 +167,143 @@ class _UserProfileModalState extends State<UserProfileModal> {
     final tapEngine = context.watch<TapEngineProvider>();
     final wallet = context.watch<WalletProvider>();
     final auth = context.watch<AuthProvider>();
+    final leaderboard = context.watch<LeaderboardProvider>();
 
     final entry = widget.entry;
     final user = widget.user;
 
     final currentClean = auth.currentUser.username.replaceAll('@', '').trim().toLowerCase();
     final currentNameClean = auth.currentUser.name.replaceAll('@', '').trim().toLowerCase();
-    final entryClean = (entry?.username ?? user?.username ?? '').replaceAll('@', '').trim().toLowerCase();
+    final rawTargetUsername = entry?.username ?? user?.username ?? '';
+    final entryClean = rawTargetUsername.replaceAll('@', '').trim().toLowerCase();
 
     final isCurrentPlayer = (user != null && user.id == auth.currentUser.id) || 
                            (entryClean.isNotEmpty && (entryClean == currentClean || entryClean == currentNameClean)) ||
                            (entry == null && user == null);
-    final username = isCurrentPlayer ? auth.currentUser.username : (entry?.username ?? user?.username ?? 'Tapper');
+
+    // Look up counterpart entry in both lists so we have full Coins & Rewards profiles for ANY user
+    final globalEntry = leaderboard.findGlobalEntry(rawTargetUsername) ??
+        (entry?.isRewardEntry == false ? entry : null);
+    final rewardEntry = leaderboard.findRewardEntry(rawTargetUsername) ??
+        (entry?.isRewardEntry == true ? entry : null);
+
+    final username = isCurrentPlayer
+        ? auth.currentUser.username
+        : (globalEntry?.username ?? rewardEntry?.username ?? entry?.username ?? user?.username ?? 'Tapper');
     final avatarUrl = isCurrentPlayer 
         ? auth.currentUser.avatarUrl 
-        : (entry?.avatarUrl ?? user?.avatarUrl ?? '');
+        : (globalEntry?.avatarUrl.isNotEmpty == true 
+            ? globalEntry!.avatarUrl 
+            : (rewardEntry?.avatarUrl.isNotEmpty == true 
+                ? rewardEntry!.avatarUrl 
+                : (entry?.avatarUrl ?? user?.avatarUrl ?? '')));
     final isGuest = isCurrentPlayer ? auth.currentUser.isGuest : (user?.isGuest ?? false);
-    final rank = isGuest ? 0 : (entry?.rank ?? user?.rank ?? 0);
-    final totalTaps = isCurrentPlayer ? tapEngine.score : (entry?.score ?? user?.totalTaps ?? 0);
-    final level = (entry?.isRewardEntry == true)
-        ? entry!.level
-        : (isCurrentPlayer ? tapEngine.level : (entry?.level ?? user?.level ?? 1));
-    final streakDays = (entry?.isRewardEntry == true)
-        ? entry!.streakDays
-        : (isCurrentPlayer ? tapEngine.activeStreakDays : (entry?.streakDays ?? user?.streakDays ?? 1));
-    final joinedDate = entry?.joinedDate ?? user?.joinedDate ?? '2026';
-    final activityRates = isCurrentPlayer 
-        ? tapEngine.weeklyActivityRates 
-        : (entry?.activityRates ?? const [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]);
+    final joinedDate = globalEntry?.joinedDate ?? rewardEntry?.joinedDate ?? entry?.joinedDate ?? user?.joinedDate ?? '2026';
+    final level = isCurrentPlayer
+        ? tapEngine.level
+        : (globalEntry?.level ?? rewardEntry?.level ?? entry?.level ?? user?.level ?? 1);
+    final streakDays = isCurrentPlayer
+        ? tapEngine.activeStreakDays
+        : (globalEntry?.streakDays ?? rewardEntry?.streakDays ?? entry?.streakDays ?? user?.streakDays ?? 1);
+
+    // 1. COINS DATA
+    final int userCoinsRank;
+    if (isGuest) {
+      userCoinsRank = 0;
+    } else if (auth.currentUser.rank > 0) {
+      userCoinsRank = auth.currentUser.rank;
+    } else {
+      userCoinsRank = 1;
+    }
+
+    final int coinsRank = isGuest
+        ? 0
+        : (isCurrentPlayer
+            ? userCoinsRank
+            : (globalEntry?.coinsRank ?? globalEntry?.rank ?? entry?.coinsRank ?? (entry?.isRewardEntry == false ? entry?.rank : null) ?? user?.rank ?? 1));
+
+    final int totalCoins = isCurrentPlayer
+        ? tapEngine.score
+        : (globalEntry?.score ?? globalEntry?.coinsScore ?? (entry?.isRewardEntry == false ? entry?.score : null) ?? user?.totalTaps ?? entry?.score ?? 0);
+
+    final List<int> coinsWeeklyTaps = isCurrentPlayer
+        ? tapEngine.weeklyTaps
+        : (globalEntry?.rawWeeklyTaps != null && globalEntry!.rawWeeklyTaps!.any((v) => v > 0)
+            ? globalEntry.rawWeeklyTaps!
+            : (entry?.rawWeeklyTaps != null && entry!.rawWeeklyTaps!.any((v) => v > 0)
+                ? entry.rawWeeklyTaps!
+                : _getAccurateWeeklyCounts(totalCoins)));
+
+    final List<double> coinsActivityRates = isCurrentPlayer
+        ? tapEngine.weeklyActivityRates
+        : (globalEntry?.activityRates ?? entry?.activityRates ?? const [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]);
+
+    // 2. REWARDS DATA
+    double totalWithdrawnMoney = 0.0;
+    if (isCurrentPlayer) {
+      for (final tx in wallet.transactions) {
+        final statusStr = tx.status.toString().toLowerCase();
+        if (statusStr.contains('completed') || statusStr.contains('approved') || statusStr.contains('paid')) {
+          totalWithdrawnMoney += (tx.amount as num).toDouble();
+        }
+      }
+    }
+
+    final double totalReward = isCurrentPlayer
+        ? totalWithdrawnMoney
+        : (rewardEntry?.rewardAmount ?? entry?.rewardAmount ?? globalEntry?.rewardAmount ?? 0.0);
+
+    final String rewardCurrency = rewardEntry?.rewardCurrency ??
+        entry?.rewardCurrency ??
+        globalEntry?.rewardCurrency ??
+        (isCurrentPlayer ? wallet.currencySymbol : '৳');
+
+    final int? rawRewardRank = isCurrentPlayer
+        ? null
+        : (rewardEntry?.rewardRank ?? rewardEntry?.rank ?? entry?.rewardRank ?? (entry?.isRewardEntry == true ? entry?.rank : null) ?? globalEntry?.rewardRank);
+
+    // Latest payout method / status
+    String? latestMethod;
+    final directMethod = rewardEntry?.rewardMethod ?? entry?.rewardMethod ?? globalEntry?.rewardMethod;
+    if (directMethod != null && directMethod.isNotEmpty) {
+      latestMethod = directMethod;
+    } else if (isCurrentPlayer && wallet.transactions.isNotEmpty) {
+      final tx = wallet.transactions.first;
+      final method = tx.method.toString().trim();
+      final statusStr = tx.status.toString().toLowerCase();
+      final isPaid = statusStr.contains('completed') || statusStr.contains('paid') || statusStr.contains('approved');
+      final isProcessing = statusStr.contains('processing') || statusStr.contains('pending');
+
+      if (isPaid) {
+        latestMethod = '$method (Paid)';
+      } else if (isProcessing) {
+        latestMethod = '$method (Pending)';
+      } else {
+        latestMethod = method;
+      }
+    }
+
+    final List<double> rewardsWeeklyAmounts = isCurrentPlayer
+        ? tapEngine.weeklyTaps.map((c) => (c / 1000.0)).toList()
+        : _getAccurateWeeklyRewardAmounts(totalReward);
+
+    final bool hasPayout = latestMethod != null && latestMethod.isNotEmpty;
+    final String payoutDisplay = hasPayout
+        ? (latestMethod.toLowerCase().contains('paid') ? latestMethod : '$latestMethod (Paid)')
+        : 'Day $streakDays';
+
+    final String rankSubtitle;
+    if (_selectedTab == 0) {
+      rankSubtitle = isGuest ? 'Rank #0' : 'Rank #$coinsRank';
+    } else {
+      if (rawRewardRank != null && rawRewardRank > 0) {
+        rankSubtitle = 'Rank #$rawRewardRank';
+      } else if (totalReward > 0) {
+        rankSubtitle = 'Verified Earner';
+      } else {
+        rankSubtitle = 'Unranked';
+      }
+    }
 
     return Container(
       decoration: const BoxDecoration(
@@ -291,7 +401,7 @@ class _UserProfileModalState extends State<UserProfileModal> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Level $level • Rank #$rank • Joined $joinedDate',
+                'Level $level • $rankSubtitle • Joined $joinedDate',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppColors.textMuted,
                       fontSize: 13,
@@ -335,27 +445,25 @@ class _UserProfileModalState extends State<UserProfileModal> {
                         key: const ValueKey('profile_coins_view'),
                         context: context,
                         numberFormatter: numberFormatter,
-                        totalTaps: totalTaps,
+                        totalTaps: totalCoins,
                         streakDays: streakDays,
-                        activityRates: activityRates,
+                        activityRates: coinsActivityRates,
                         isCurrentPlayer: isCurrentPlayer,
-                        weeklyTaps: tapEngine.weeklyTaps,
-                        rawWeeklyTaps: entry?.rawWeeklyTaps,
-                        score: entry?.score ?? user?.totalTaps ?? 0,
+                        weeklyTaps: coinsWeeklyTaps,
+                        rawWeeklyTaps: coinsWeeklyTaps,
+                        score: totalCoins,
                       )
                     : _buildRewardsView(
                         key: const ValueKey('profile_rewards_view'),
                         context: context,
                         rewardFormatter: rewardFormatter,
-                        entry: entry,
-                        isCurrentPlayer: isCurrentPlayer,
-                        walletBalance: wallet.balance,
-                        walletCurrencySymbol: wallet.currencySymbol,
-                        walletTransactions: wallet.transactions,
-                        score: entry?.score ?? user?.totalTaps ?? 0,
+                        rewardVal: totalReward,
+                        rewardCurrency: rewardCurrency,
+                        hasPayout: hasPayout,
+                        payoutText: payoutDisplay,
                         streakDays: streakDays,
-                        activityRates: activityRates,
-                        weeklyTaps: tapEngine.weeklyTaps,
+                        activityRates: coinsActivityRates,
+                        rawRewardAmounts: rewardsWeeklyAmounts,
                       ),
               ),
             ],
@@ -477,59 +585,14 @@ class _UserProfileModalState extends State<UserProfileModal> {
     required Key key,
     required BuildContext context,
     required NumberFormat rewardFormatter,
-    required LeaderboardEntry? entry,
-    required bool isCurrentPlayer,
-    required double walletBalance,
-    required String walletCurrencySymbol,
-    required List<dynamic> walletTransactions,
-    required int score,
+    required double rewardVal,
+    required String rewardCurrency,
+    required bool hasPayout,
+    required String payoutText,
     required int streakDays,
     required List<double> activityRates,
-    required List<int> weeklyTaps,
+    required List<double> rawRewardAmounts,
   }) {
-    final String rewardCurrency = entry?.rewardCurrency ?? (isCurrentPlayer ? walletCurrencySymbol : '৳');
-    
-    // TOTAL REWARD: Strictly shows money received from completed/approved withdrawals (in BDT ৳)
-    double totalWithdrawnMoney = 0.0;
-    if (isCurrentPlayer) {
-      for (final tx in walletTransactions) {
-        final statusStr = tx.status.toString().toLowerCase();
-        if (statusStr.contains('completed') || statusStr.contains('approved') || statusStr.contains('paid')) {
-          totalWithdrawnMoney += (tx.amount as num).toDouble();
-        }
-      }
-    }
-
-    final double rewardVal = (entry?.rewardAmount != null)
-        ? entry!.rewardAmount!
-        : (isCurrentPlayer ? totalWithdrawnMoney : 0.0);
-
-    // PAYOUT STATUS: Shows payment method from last payout (e.g. "bKash (Paid)" or "Nagad")
-    String? latestMethod;
-    bool isLatestPaid = false;
-
-    if (entry?.rewardMethod != null && entry!.rewardMethod!.isNotEmpty) {
-      latestMethod = entry.rewardMethod;
-      isLatestPaid = true;
-    } else if (isCurrentPlayer && walletTransactions.isNotEmpty) {
-      final tx = walletTransactions.first;
-      final method = tx.method.toString().trim();
-      final statusStr = tx.status.toString().toLowerCase();
-      isLatestPaid = statusStr.contains('completed') || statusStr.contains('paid') || statusStr.contains('approved');
-      final isProcessing = statusStr.contains('processing') || statusStr.contains('pending');
-
-      if (isLatestPaid) {
-        latestMethod = '$method (Paid)';
-      } else if (isProcessing) {
-        latestMethod = '$method (Pending)';
-      } else {
-        latestMethod = method;
-      }
-    }
-
-    final bool hasPayout = latestMethod != null && latestMethod.isNotEmpty;
-    final String payoutText = hasPayout ? latestMethod : 'Day $streakDays';
-
     return Column(
       key: key,
       mainAxisSize: MainAxisSize.min,
@@ -631,11 +694,7 @@ class _UserProfileModalState extends State<UserProfileModal> {
         ActivityBarChart(
           activityRates: activityRates,
           rawTapCounts: null,
-          rawRewardAmounts: isCurrentPlayer
-              ? weeklyTaps.map((c) => (c / 1000.0)).toList()
-              : (entry?.isRewardEntry == true
-                  ? _getAccurateWeeklyRewardAmounts(entry!.rewardAmount ?? entry.score.toDouble())
-                  : _getAccurateWeeklyRewardAmounts(score / 1000.0)),
+          rawRewardAmounts: rawRewardAmounts,
           isReward: true,
           currencySymbol: rewardCurrency,
         ),
@@ -655,7 +714,7 @@ class _UserProfileModalState extends State<UserProfileModal> {
     final list = List<int>.filled(7, 0);
     if (score <= 0) return list;
     final todayIdx = TimeUtils.currentWeekdayIndex();
-    list[todayIdx] = (score / 7).round();
+    list[todayIdx] = score;
     return list;
   }
 }

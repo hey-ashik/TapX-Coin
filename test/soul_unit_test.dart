@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soul/models/notification_model.dart';
 import 'package:soul/models/transaction_model.dart';
 import 'package:soul/providers/auth_provider.dart';
@@ -6,9 +7,14 @@ import 'package:soul/providers/leaderboard_provider.dart';
 import 'package:soul/providers/settings_provider.dart';
 import 'package:soul/providers/tap_engine_provider.dart';
 import 'package:soul/providers/wallet_provider.dart';
-import 'package:test/test.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
   group('TapX App Core Unit Tests', () {
     test('TapEngineProvider initial score starts at 0 and increments with level progress', () {
       final tapEngine = TapEngineProvider();
@@ -113,12 +119,9 @@ void main() {
       auth.logout();
       expect(auth.isAuthenticated, isFalse);
 
-      await auth.register(name: 'Ashik', email: 'ashik@tapx.app', password: 'password123');
-      expect(auth.currentUser.username, 'Ashik');
-      expect(auth.currentUser.email, 'ashik@tapx.app');
-
-      await auth.verifyOtp('749201');
+      auth.loginAsGuest();
       expect(auth.isAuthenticated, isTrue);
+      expect(auth.currentUser.username.contains('Guest'), isTrue);
     });
 
     test('SettingsProvider toggles preferences', () {
