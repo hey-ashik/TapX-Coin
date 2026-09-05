@@ -334,18 +334,20 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   ),
 
                   // 4. Leaderboard items or Skeleton Loader
-                  if (leaderboard.isLoading && entries.isEmpty) ...[
-                    const AppSkeletonLeaderboardList(itemCount: 6),
-                  ] else ...[
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 220),
-                      switchInCurve: Curves.easeOut,
-                      switchOutCurve: Curves.easeIn,
-                      child: ListView.separated(
-                        key: ValueKey<int>(leaderboard.selectedTab),
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: entries.length,
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 260),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    child: (leaderboard.isLoading && (!leaderboard.hasInitialFetchCompleted || entries.isEmpty))
+                        ? const AppSkeletonLeaderboardList(
+                            key: ValueKey<String>('leaderboard_skeleton'),
+                            itemCount: 8,
+                          )
+                        : ListView.separated(
+                            key: ValueKey<String>('tab_${leaderboard.selectedTab}'),
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: entries.length,
                         separatorBuilder: (context, index) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           final item = entries[index];
@@ -511,8 +513,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                           );
                         },
                       ),
-                    ),
-                  ],
+                  ),
                   const SizedBox(height: 24),
                 ],
               ),

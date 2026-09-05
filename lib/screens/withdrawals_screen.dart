@@ -7,6 +7,7 @@ import '../providers/wallet_provider.dart';
 import '../services/haptic_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_pull_to_refresh.dart';
+import '../widgets/app_skeleton.dart';
 import '../widgets/withdrawal_modal.dart';
 
 class WithdrawalsScreen extends StatefulWidget {
@@ -480,131 +481,142 @@ class _WithdrawalsScreenState extends State<WithdrawalsScreen> {
                 ),
           ),
           const SizedBox(height: 12),
-          if (wallet.transactions.isEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceCard,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.borderSubtle),
-              ),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.account_balance_wallet_outlined,
-                    size: 32,
-                    color: AppColors.textMuted.withValues(alpha: 0.5),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'No payout history yet',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Reach 50,000 taps (৳50) to make your first withdrawal.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: wallet.transactions.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 10),
-              itemBuilder: (context, index) {
-                final tx = wallet.transactions[index];
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceCard,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.borderSubtle),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 260),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            child: (wallet.isLoadingTransactions && wallet.transactions.isEmpty)
+                ? const AppSkeletonTransactionList(
+                    key: ValueKey<String>('tx_skeleton'),
+                    itemCount: 3,
+                  )
+                : wallet.transactions.isEmpty
+                    ? Container(
+                        key: const ValueKey<String>('tx_empty'),
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceSubtle,
-                          shape: BoxShape.circle,
+                          color: AppColors.surfaceCard,
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: AppColors.borderSubtle),
                         ),
-                        child: const Icon(
-                          Icons.arrow_upward,
-                          color: AppColors.primary,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              tx.method,
-                              style: const TextStyle(
-                                fontSize: 15,
+                            Icon(
+                              Icons.account_balance_wallet_outlined,
+                              size: 32,
+                              color: AppColors.textMuted.withValues(alpha: 0.5),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'No payout history yet',
+                              style: TextStyle(
+                                fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.primary,
                               ),
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${tx.destination} • ${dateFormatter.format(tx.timestamp)}',
-                              style: const TextStyle(
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Reach 50,000 taps (৳50) to make your first withdrawal.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
                                 fontSize: 12,
                                 color: AppColors.textMuted,
                               ),
                             ),
                           ],
                         ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            '-${tx.formattedAmount}',
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.primary,
+                      )
+                    : ListView.separated(
+                        key: const ValueKey<String>('tx_list'),
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: wallet.transactions.length,
+                        separatorBuilder: (context, index) => const SizedBox(height: 10),
+                        itemBuilder: (context, index) {
+                          final tx = wallet.transactions[index];
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceCard,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: AppColors.borderSubtle),
                             ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            tx.status == TransactionStatus.completed
-                                ? 'Completed'
-                                : (tx.status == TransactionStatus.rejected ? 'Rejected' : 'Processing'),
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: tx.status == TransactionStatus.completed
-                                  ? AppColors.success
-                                  : (tx.status == TransactionStatus.rejected
-                                      ? AppColors.error
-                                      : AppColors.accentGold),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surfaceSubtle,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: AppColors.borderSubtle),
+                                  ),
+                                  child: const Icon(
+                                    Icons.arrow_upward,
+                                    color: AppColors.primary,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        tx.method,
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        '${tx.destination} • ${dateFormatter.format(tx.timestamp)}',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: AppColors.textMuted,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      '-${tx.formattedAmount}',
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      tx.status == TransactionStatus.completed
+                                          ? 'Completed'
+                                          : (tx.status == TransactionStatus.rejected ? 'Rejected' : 'Processing'),
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: tx.status == TransactionStatus.completed
+                                          ? AppColors.success
+                                          : (tx.status == TransactionStatus.rejected
+                                              ? AppColors.error
+                                              : AppColors.accentGold),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                          );
+                        },
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
+          ),
           const SizedBox(height: 24),
         ],
       ),

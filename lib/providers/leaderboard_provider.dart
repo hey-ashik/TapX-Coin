@@ -8,12 +8,14 @@ class LeaderboardProvider extends ChangeNotifier {
   int _selectedTab = 0; // 0 = Rankers (Global Scores), 1 = Rewards (Completed Payouts)
   LeaderboardEntry? _selectedEntry;
   bool _isLoading = false;
+  bool _hasInitialFetchCompleted = false;
   String _searchQuery = '';
   Timer? _autoRefreshTimer;
 
   int get selectedTab => _selectedTab;
   LeaderboardEntry? get selectedEntry => _selectedEntry;
   bool get isLoading => _isLoading;
+  bool get hasInitialFetchCompleted => _hasInitialFetchCompleted;
   String get searchQuery => _searchQuery;
 
   LeaderboardProvider() {
@@ -601,12 +603,13 @@ class LeaderboardProvider extends ChangeNotifier {
       }).take(10).toList();
     } catch (e) {
       debugPrint('Leaderboard fetch note: $e');
+    } finally {
+      _hasInitialFetchCompleted = true;
+      if (!silent) {
+        _isLoading = false;
+      }
+      _safeNotifyListeners();
     }
-
-    if (!silent) {
-      _isLoading = false;
-    }
-    _safeNotifyListeners();
   }
 
   bool _isDisposed = false;

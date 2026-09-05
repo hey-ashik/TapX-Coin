@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soul/models/leaderboard_entry.dart';
 import 'package:soul/providers/leaderboard_provider.dart';
+import 'package:soul/providers/wallet_provider.dart';
 import 'package:soul/utils/time_utils.dart';
 
 void main() {
@@ -111,6 +112,17 @@ void main() {
       final weekDates = TimeUtils.currentWeekBdDates();
       expect(weekDates.length, 7);
       expect(weekDates[weekdayIndex], TimeUtils.bdDateString());
+    });
+
+    test('LeaderboardProvider and WalletProvider expose skeleton loading flags correctly', () {
+      final leaderboard = LeaderboardProvider();
+      expect(leaderboard.hasInitialFetchCompleted, isA<bool>());
+
+      final wallet = WalletProvider();
+      expect(wallet.isLoadingTransactions, isA<bool>());
+
+      leaderboard.dispose();
+      wallet.dispose();
     });
   });
 }

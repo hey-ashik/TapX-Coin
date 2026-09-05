@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
+/// Ultra-smooth GPU-accelerated shimmer shader for skeleton loading
 class AppShimmer extends StatefulWidget {
   final Widget child;
+  final Duration duration;
 
-  const AppShimmer({super.key, required this.child});
+  const AppShimmer({
+    super.key,
+    required this.child,
+    this.duration = const Duration(milliseconds: 1300),
+  });
 
   @override
   State<AppShimmer> createState() => _AppShimmerState();
@@ -12,19 +18,14 @@ class AppShimmer extends StatefulWidget {
 
 class _AppShimmerState extends State<AppShimmer> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    )..repeat(reverse: true);
-
-    _animation = Tween<double>(begin: 0.35, end: 0.85).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+      duration: widget.duration,
+    )..repeat();
   }
 
   @override
@@ -36,14 +37,38 @@ class _AppShimmerState extends State<AppShimmer> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, _) {
-        return Opacity(
-          opacity: _animation.value,
-          child: widget.child,
+      animation: _controller,
+      builder: (context, child) {
+        return ShaderMask(
+          blendMode: BlendMode.srcATop,
+          shaderCallback: (bounds) {
+            return LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: const [
+                Color(0xFF18181C), // Base dark surface
+                Color(0xFF2C2C35), // Subtle metallic shimmer sweep
+                Color(0xFF18181C), // Base dark surface
+              ],
+              stops: const [0.1, 0.5, 0.9],
+              transform: _SlidingGradientTransform(slidePercent: _controller.value),
+            ).createShader(bounds);
+          },
+          child: child,
         );
       },
+      child: widget.child,
     );
+  }
+}
+
+class _SlidingGradientTransform extends GradientTransform {
+  final double slidePercent;
+  const _SlidingGradientTransform({required this.slidePercent});
+
+  @override
+  Matrix4? transform(Rect bounds, {TextDirection? textDirection}) {
+    return Matrix4.translationValues(bounds.width * (slidePercent * 2.5 - 1.25), 0.0, 0.0);
   }
 }
 
@@ -196,8 +221,75 @@ class AppSkeletonLeaderboardList extends StatelessWidget {
                   ),
                 ),
 
-                // Score Skeleton
-                const AppSkeletonBox(width: 60, height: 16, borderRadius: 4),
+                // Score Skeleton & Subtitle
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    AppSkeletonBox(width: 60, height: 16, borderRadius: 4),
+                    SizedBox(height: 4),
+                    AppSkeletonBox(width: 32, height: 10, borderRadius: 3),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Skeleton Loader list for Payout/Transaction History
+class AppSkeletonTransactionList extends StatelessWidget {
+  final int itemCount;
+
+  const AppSkeletonTransactionList({super.key, this.itemCount = 3});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppShimmer(
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: itemCount,
+        separatorBuilder: (_, _) => const SizedBox(height: 10),
+        itemBuilder: (context, index) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceCard,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.borderSubtle),
+            ),
+            child: Row(
+              children: [
+                // Payout method icon circle
+                const AppSkeletonCircle(size: 40),
+                const SizedBox(width: 12),
+
+                // Method name & Destination / Date
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      AppSkeletonBox(width: 80, height: 14, borderRadius: 4),
+                      SizedBox(height: 6),
+                      AppSkeletonBox(width: 140, height: 11, borderRadius: 3),
+                    ],
+                  ),
+                ),
+
+                // Amount & status pill
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    AppSkeletonBox(width: 65, height: 16, borderRadius: 4),
+                    SizedBox(height: 4),
+                    AppSkeletonBox(width: 50, height: 12, borderRadius: 4),
+                  ],
+                ),
               ],
             ),
           );

@@ -288,44 +288,51 @@ class _NotificationModalState extends State<NotificationModal> {
 
             // Content
             Expanded(
-              child: _isLoading
-                  ? const SingleChildScrollView(
-                      physics: BouncingScrollPhysics(),
-                      child: AppSkeletonNotificationList(itemCount: 4),
-                    )
-                  : visibleNotifications.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.notifications_off_outlined,
-                                size: 48,
-                                color: AppColors.textMuted.withValues(alpha: 0.4),
-                              ),
-                              const SizedBox(height: 12),
-                              const Text(
-                                'No notifications yet',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textMuted,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 260),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                child: _isLoading
+                    ? const SingleChildScrollView(
+                        key: ValueKey<String>('notif_skeleton'),
+                        physics: BouncingScrollPhysics(),
+                        child: AppSkeletonNotificationList(itemCount: 4),
+                      )
+                    : visibleNotifications.isEmpty
+                        ? Center(
+                            key: const ValueKey<String>('notif_empty'),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.notifications_off_outlined,
+                                  size: 48,
+                                  color: AppColors.textMuted.withValues(alpha: 0.4),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                'Withdrawal confirmations and announcements will appear here.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.textMuted,
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'No notifications yet',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textMuted,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : ListView.separated(
-                          itemCount: visibleNotifications.length,
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Withdrawal confirmations and announcements will appear here.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.separated(
+                            key: const ValueKey<String>('notif_list'),
+                            itemCount: visibleNotifications.length,
                           separatorBuilder: (context, index) => const SizedBox(height: 10),
                           itemBuilder: (context, index) {
                             final notif = visibleNotifications[index];
@@ -477,6 +484,7 @@ class _NotificationModalState extends State<NotificationModal> {
                             );
                           },
                         ),
+              ),
             ),
           ],
         ),

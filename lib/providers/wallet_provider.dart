@@ -14,6 +14,7 @@ class WalletProvider extends ChangeNotifier {
   int _tapsBalance = 0;
   CurrencyType _currency = CurrencyType.bdt;
   final List<PayoutTransaction> _transactions = [];
+  bool _isLoadingTransactions = false;
   Timer? _pollingTimer;
 
   WalletProvider() {
@@ -25,6 +26,7 @@ class WalletProvider extends ChangeNotifier {
   int get tapsBalance => _tapsBalance;
   CurrencyType get currency => _currency;
   List<PayoutTransaction> get transactions => List.unmodifiable(_transactions);
+  bool get isLoadingTransactions => _isLoadingTransactions;
 
   String get currencySymbol => _currency == CurrencyType.bdt ? '৳' : '\$';
   String get currencyCode => _currency == CurrencyType.bdt ? 'BDT' : 'USDT';
@@ -58,7 +60,7 @@ class WalletProvider extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       _tapsBalance = prefs.getInt(_keyWalletBalance) ?? _tapsBalance;
-      notifyListeners();
+      _safeNotifyListeners();
     } catch (e) {
       debugPrint('Wallet restore note: $e');
     }
@@ -133,6 +135,8 @@ class WalletProvider extends ChangeNotifier {
 
   Future<void> fetchTransactions() async {
     if (!ApiService.hasToken) return;
+    _isLoadingTransactions = true;
+    notifyListeners();
     try {
       final data = await ApiService.getTransactions();
       if (data != null) {
@@ -168,10 +172,12 @@ class WalletProvider extends ChangeNotifier {
             ),
           );
         }
-        notifyListeners();
       }
     } catch (e) {
       debugPrint('fetchTransactions note: $e');
+    } finally {
+      _isLoadingTransactions = false;
+      _safeNotifyListeners();
     }
   }
 
@@ -221,9 +227,18 @@ class WalletProvider extends ChangeNotifier {
     return true;
   }
 
+  bool _isDisposed = false;
+
   @override
   void dispose() {
+    _isDisposed = true;
     _pollingTimer?.cancel();
     super.dispose();
+  }
+
+  void _safeNotifyListeners() {
+    if (!_isDisposed) {
+      notifyListeners();
+    }
   }
 }
